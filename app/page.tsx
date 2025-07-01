@@ -15,7 +15,7 @@ export default function Home() {
         </ul>
 
         <form
-          action="https://YOUR-MAILERLITE-FORM-URL"
+          action="https://assets.mailerlite.com/jsonp/7CPjKF/forms/158664325922293207/subscribe"
           method="post"
           target="_blank"
           className="flex flex-col sm:flex-row justify-center items-center gap-4"
