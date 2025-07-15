@@ -2,11 +2,13 @@
 
 import { useEffect } from 'react';
 
-declare global {
-  interface MLFunction extends Function {
-    q?: unknown[][];
-  }
+// ✅ Type-safe definition to satisfy TypeScript & ESLint
+type MLFunction = {
+  (...args: unknown[]): void;
+  q?: unknown[][];
+};
 
+declare global {
   interface Window {
     ml?: MLFunction;
   }
