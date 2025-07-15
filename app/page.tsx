@@ -2,6 +2,12 @@
 
 import { useEffect } from 'react';
 
+declare global {
+  interface Window {
+    ml?: ((...args: unknown[]) => void) & { q?: unknown[] };
+  }
+}
+
 export default function Home() {
   /* ───────── Load MailerLite universal script once ───────── */
   useEffect(() => {
@@ -10,13 +16,14 @@ export default function Home() {
     s.async = true;
     document.body.appendChild(s);
 
-    // init ML
-    (window as any).ml =
-      (window as any).ml ||
-      function () {
-        ((window as any).ml.q = (window as any).ml.q || []).push(arguments);
+    if (!window.ml) {
+      const mlFunc = (...args: unknown[]) => {
+        (mlFunc.q = mlFunc.q || []).push(args);
       };
-    (window as any).ml('account', '1631994'); // ← your MailerLite account ID
+      window.ml = mlFunc as typeof window.ml;
+    }
+
+    window.ml?.('account', '1631994');
   }, []);
 
   return (
