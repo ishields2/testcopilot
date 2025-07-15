@@ -3,13 +3,16 @@
 import { useEffect } from 'react';
 
 declare global {
+  interface MLFunction extends Function {
+    q?: unknown[][];
+  }
+
   interface Window {
-    ml?: ((...args: unknown[]) => void) & { q?: unknown[] };
+    ml?: MLFunction;
   }
 }
 
 export default function Home() {
-  /* ───────── Load MailerLite universal script once ───────── */
   useEffect(() => {
     const s = document.createElement('script');
     s.src = 'https://assets.mailerlite.com/js/universal.js';
@@ -17,13 +20,13 @@ export default function Home() {
     document.body.appendChild(s);
 
     if (!window.ml) {
-      const mlFunc = (...args: unknown[]) => {
+      const mlFunc: MLFunction = (...args: unknown[]) => {
         (mlFunc.q = mlFunc.q || []).push(args);
       };
-      window.ml = mlFunc as typeof window.ml;
+      window.ml = mlFunc;
     }
 
-    window.ml?.('account', '1631994');
+    window.ml('account', '1631994');
   }, []);
 
   return (
@@ -45,7 +48,6 @@ export default function Home() {
           <li>🧬 Sniff out brittle selectors before they break</li>
         </ul>
 
-        {/* ───────── MailerLite embedded form ───────── */}
         <div className="ml-embedded mx-auto" data-form="JbRC73"></div>
 
         <p className="text-sm text-gray-500 mt-6">
