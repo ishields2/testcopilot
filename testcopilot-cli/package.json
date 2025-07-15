@@ -1,0 +1,26 @@
+{
+  "name": "testcopilot-cli",
+  "version": "1.0.0",
+  "description": "CLI tool to analyze Cypress tests for bad practices",
+  "main": "dist/index.js",
+  "bin": {
+    "tcp": "dist/index.js",
+    "testcopilot": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts"
+  },
+  "author": "Ian Shields",
+  "license": "MIT",
+  "keywords": ["cli", "cypress", "test", "analyzer"],
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0"
+  }
+}
