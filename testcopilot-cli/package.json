@@ -9,7 +9,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/index.ts"
+    "start": "node dist/index.js",
+    "link": "npm link",
+    "clean": "rm -rf dist"
   },
   "author": "Ian Shields",
   "license": "MIT",

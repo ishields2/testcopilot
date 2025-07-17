@@ -1,0 +1,48 @@
+## 🧱 Foundational / Setup
+- [x] Create CLI project repo with readme and license
+- [x] Define MVP scope and config strategy (including CLI + UI)
+- [x] Add CLI flags and configuration file support (`testcopilot.config.json`)
+- [ ] Implement interactive CLI setup (`testcopilot init`) to scaffold config
+- [ ] Sync default config settings between CLI and UI
+- [ ] Add shared config schema file for CLI/UI validation
+
+## ⚙️ MVP CLI Features
+- [ ] Implement file ingestion logic
+- [ ] Add checker for `.wait()` usage
+- [ ] Add checker for excessive `.then()` nesting
+- [ ] Add checker for brittle selectors
+- [ ] Add checker for long test chains
+- [ ] Add checker for redundant shoulds
+- [ ] Add checker for False Confidence Heuristic
+- [ ] Add checker for missing assertions
+- [ ] Add checker for Async/Await confusion
+- [ ] Format output with severity + recommendations
+- [ ] Add optional plain-English summary (Code Review output)
+- [ ] Add unit tests for checkers
+- [ ] Add GPT-powered summary and improvement suggestions (--explain flag)
+- [ ] Add PDF report output (CLI)
+
+## 💻 MVP UI (File + Folder Upload)
+- [ ] Create frontend file upload project repo
+- [ ] Implement drag & drop + file parsing
+- [ ] Add folder upload support via `webkitdirectory`
+- [ ] Display per-file analysis results
+- [ ] Add toggle for project-level summary
+- [ ] Style output formatting like the CLI (severity + review)
+- [ ] Add edge case handling (non-js files, too large, etc.)
+- [ ] Add config settings panel to match CLI options
+- [ ] Add AI summary toggle for UI analysis
+- [ ] Allow downloading PDF report from UI
+
+## 📣 Outreach & Discovery
+- [ ] Post initial Reddit discovery thread
+- [ ] Log replies and group by themes (frustration types, etc.)
+- [ ] Draft outreach form (Typeform/Google Form)
+- [ ] Identify 10 people to follow up with
+- [ ] Prep early “thanks for interest” email template
+
+## 🧽 Polish & Launch Prep
+- [ ] Add usage documentation for CLI and UI
+- [ ] Push all working code to GitHub
+- [ ] Create MVP enhancement backlog (post-Phase 1)
+- [ ] Write Phase 1 post-mortem summary

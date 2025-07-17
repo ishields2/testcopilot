@@ -16,6 +16,13 @@ tcp scan .\tests
 
 ---
 
+## 🚀 Usage (Development)
+Run from the main project root (testcopilot)
+```
+npm run dev
+
+```
+
 ## 🧰 Features (MVP Scope)
 
 - ✅ Detects:

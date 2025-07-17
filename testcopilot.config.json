@@ -1,0 +1,8 @@
+{
+  "checkers": {
+    "waitUsage": false,
+    "missingAssertions": false
+  },
+  "outputFormat": "summary",
+  "explain": true
+}
