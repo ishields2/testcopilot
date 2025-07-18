@@ -1,102 +1,78 @@
 # TestCopilot CLI
 
-**TestCopilot** is a command-line tool to analyze Cypress test files and identify poor practices, brittle patterns, and potential flakiness.
-
-It’s the core of the **Phase 1 MVP** for TestCopilot — focused on **local-only**, fast feedback to help developers write more stable E2E tests with zero telemetry.
+**TestCopilot CLI** is the command-line tool that powers the Cypress test analysis engine. It detects poor practices in `.js` and `.ts` Cypress files and outputs a plain-English summary to help stabilize E2E tests.
 
 ---
 
 ## 🚀 Usage
 
+### Run from root (globally linked)
+```powershell
+tcp scan .\path	to\your	tests
 ```
-npx testcopilot scan .\tests
-# or, if globally linked
-tcp scan .\tests
+
+- Runs the CLI using the globally linked `tcp` command.
+- Loads config from `testcopilot.config.json` in root, or use `--config` to specify another path.
+
+### Run from root (dev mode, no build required)
+```powershell
+npx ts-node testcopilot-cli/src/index.ts scan ./test-files
 ```
+
+- Great for development — no need to recompile or link.
 
 ---
 
-## 🚀 Usage (Development)
-Run from the main project root (testcopilot)
+## ⚙️ Dev Setup (from `/testcopilot-cli`)
+
+```powershell
+npm install        # Install deps
+npm run build      # Compile TypeScript into dist/
+npm link           # Globally link CLI as `tcp`
 ```
-npm run dev
 
-```
-
-## 🧰 Features (MVP Scope)
-
-- ✅ Detects:
-  - Usage of `.wait()`
-  - Deep `.then()` nesting
-  - Brittle selectors (e.g. overuse of `:nth-child`, `div > div`, etc.)
-  - Long Cypress command chains
-  - Missing or weak assertions (e.g. no `should()` or `expect()` used)
-- ✅ Outputs:
-  - Plain-English **"Code Review" summary** per file
-  - CLI output with severity levels and suggestions
-- ✅ Supports:
-  - `--config` flag to load a JSON config file
-  - Fallback to `.testcopilotrc` or `testcopilot.config.json`
-  - (Coming soon) `testcopilot init` interactive setup wizard
+After linking, you can run `tcp` from anywhere.
 
 ---
 
-## 📦 Development
-
-To run locally:
-
-```
-npm install            # Install dependencies
-npm run build          # Build TypeScript into dist/
-npm link               # Link CLI globally for development
-tcp scan .\tests       # Run CLI
-```
-
-Ensure your `tsconfig.json` outputs to `dist/`, and that `package.json` has the correct `bin` entry:
-
-```
-"bin": {
-  "tcp": "dist/index.js",
-  "testcopilot": "dist/index.js"
-}
-```
-
----
-
-## 🧪 Example Config File
-
-```
-{
-  "checkWaitUsage": true,
-  "checkThenNesting": true,
-  "checkBrittleSelectors": true,
-  "checkLongChains": true,
-  "checkMissingAssertions": true
-}
-```
-
-You can save this as `testcopilot.config.json` or `.testcopilotrc` in your project root and run:
-
-```
-tcp scan ./cypress/e2e
-```
-
-Or use the `--config` flag to specify a path.
-
----
-
-## 🧱 Folder Structure
+## 📁 Folder Structure
 
 ```
 testcopilot-cli/
 ├── src/
-│   ├── index.ts             # CLI entrypoint
-│   ├── commands/scan.ts     # Main command logic
-│   └── config/loadConfig.ts # Config loader (coming next)
-├── dist/                    # Compiled JS output
+│   ├── index.ts             # CLI entry point
+│   ├── config/              # Config loader utilities
+│   ├── checkers/            # Rule checkers (e.g., wait, then)
+│   └── output/              # Formatters, summaries
+├── dist/                    # Compiled output (after build)
 ├── package.json
 └── tsconfig.json
 ```
+
+---
+
+## 🔧 Config Format (`testcopilot.config.json`)
+
+```json
+{
+  "checkers": {
+    "waitUsage": true,
+    "missingAssertions": true
+  },
+  "outputFormat": "summary",
+  "explain": true
+}
+```
+
+Place this in your project root or use `--config` to specify a path.
+
+---
+
+## 🧪 Coming Soon
+
+- `tcp init` command for interactive config generation
+- Additional rule checkers and output formats
+- Optional AI-powered summaries (Phase 2)
 
 ---
 
