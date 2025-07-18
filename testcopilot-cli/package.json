@@ -15,7 +15,12 @@
   },
   "author": "Ian Shields",
   "license": "MIT",
-  "keywords": ["cli", "cypress", "test", "analyzer"],
+  "keywords": [
+    "cli",
+    "cypress",
+    "test",
+    "analyzer"
+  ],
   "devDependencies": {
     "@types/node": "^24.0.13",
     "ts-node": "^10.9.2",
@@ -23,6 +28,7 @@
   },
   "dependencies": {
     "chalk": "^5.4.1",
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "inquirer": "^12.7.0"
   }
 }

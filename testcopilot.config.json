@@ -1,7 +1,13 @@
 {
   "checkers": {
-    "waitUsage": false,
-    "missingAssertions": false
+    "waitUsage": true,
+    "missingAssertions": true,
+    "deepThenNesting": true,
+    "brittleSelectors": true,
+    "longCommandChains": true,
+    "redundantShoulds": true,
+    "falseConfidenceHeuristic": true,
+    "asyncAwaitConfusion": true
   },
   "outputFormat": "summary",
   "explain": true
