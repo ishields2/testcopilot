@@ -2,12 +2,12 @@
 - [x] Create CLI project repo with readme and license
 - [x] Define MVP scope and config strategy (including CLI + UI)
 - [x] Add CLI flags and configuration file support (`testcopilot.config.json`)
-- [ ] Implement interactive CLI setup (`testcopilot init`) to scaffold config
+- [x] Implement interactive CLI setup (`testcopilot init`) to scaffold config
 - [ ] Sync default config settings between CLI and UI
 - [ ] Add shared config schema file for CLI/UI validation
 
 ## ⚙️ MVP CLI Features
-- [ ] Implement file ingestion logic
+- [ ] Implement file ingestion logic (sanner logic)
 - [ ] Add checker for `.wait()` usage
 - [ ] Add checker for excessive `.then()` nesting
 - [ ] Add checker for brittle selectors

@@ -56,8 +56,8 @@ testcopilot-cli/
 ```json
 {
   "checkers": {
-    "waitUsage": true,
-    "missingAssertions": true
+    "raceConditionAnalysis": true,
+    "assertionAnalysis": true
   },
   "outputFormat": "summary",
   "explain": true

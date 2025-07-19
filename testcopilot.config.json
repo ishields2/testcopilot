@@ -1,14 +1,15 @@
 {
   "checkers": {
-    "waitUsage": true,
-    "missingAssertions": true,
-    "deepThenNesting": true,
-    "brittleSelectors": true,
+    "raceConditionAnalysis": true,
+    "assertionAnalysis": false,
+    "deepNestingAnalysis": true,
+    "brittleSelectors": false,
     "longCommandChains": true,
+    "longTestStructure": false,
     "redundantShoulds": true,
-    "falseConfidenceHeuristic": true,
-    "asyncAwaitConfusion": true
+    "falseConfidenceHeuristic": false,
+    "asyncAwaitAnalysis": true
   },
-  "outputFormat": "summary",
-  "explain": true
+  "outputFormat": "json",
+  "explain": false
 }

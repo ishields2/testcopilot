@@ -34,13 +34,14 @@ Users can customize behavior via either flags or config file.
 {
   "outputFormat": "console", // or "summary", "pdf", json
   "checkers": {
-    "waitUsage": true,
+    "raceConditionAnalysis": true,
     "thenNesting": true,
+    "assertionAnalysis": true,
     "brittleSelectors": true,
     "longChains": true,
+    "longTestStructure": true,
     "redundantShoulds": true,
     "falseConfidence": true,
-    "missingAssertions": true,
     "asyncConfusion": true
   },
   "thresholds": {
@@ -59,7 +60,7 @@ Users can override config file settings via command-line flags:
 
 ```
 --config=testcopilot.config.json
---disable-checker=waitUsage
+--disable-checker=raceConditionAnalysis
 --output=summary
 --max-then-depth=5
 ```

@@ -10,6 +10,7 @@
     "cli": "ts-node testcopilot-cli/src/index.ts scan ./test-files"
   },
   "dependencies": {
+    "enquirer": "^2.4.1",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -20,7 +21,9 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",

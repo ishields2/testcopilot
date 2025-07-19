@@ -12,6 +12,9 @@ import chalk from 'chalk';                     // Adds color to terminal output
 import * as fs from 'fs';                      // Node file system module
 import * as path from 'path';                  // Node path resolver
 import { loadConfig } from './configLoader';   // Loads testcopilot.config.json if present
+// @ts-ignore
+import { Confirm, Select } from 'enquirer';    // Prompts from Enquirer
+import readline from 'readline';               // For "press any key to continue"
 
 const program = new Command(); // Create CLI instance
 
@@ -42,12 +45,25 @@ program
   });
 
 /**
+ * Pauses execution until any key is pressed
+ */
+function waitForKeypress(): Promise<void> {
+  return new Promise((resolve) => {
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.once('data', () => {
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+      resolve();
+    });
+  });
+}
+
+/**
  * Interactive setup for generating testcopilot.config.json
  * Guides the user through checker selection and output preferences.
  */
 async function runInit() {
-  const inquirer = (await import('inquirer')).default;
-
   type ConfigAnswers = {
     outputFormat: 'summary' | 'json';
     explain: boolean;
@@ -57,24 +73,24 @@ async function runInit() {
   // Full list of checkers with key and rich description
   const checkers = [
     {
-      key: 'waitUsage',
-      prompt: 'Enable enhanced cy.wait() analysis?',
-      description: `Enhanced analysis of cy.wait() usage – flags patterns that may introduce race conditions, 
+      key: 'raceConditionAnalysis',
+      prompt: 'Enable race condition analysis?',
+      description: `Enhanced race condition analysis – flags patterns that may introduce race conditions, 
 timing flakiness, or brittle test design. Offers alternative strategies such as custom retry logic, 
 waiting on specific UI conditions and using cy.intercept() where applicable. This helps prevent flaky 
 tests and encourages more robust async handling.`
     },
     {
-      key: 'missingAssertions',
+      key: 'assertionAnalysis',
       prompt: 'Enable advanced assertion analysis?',
       description: `Flags tests that may pass without verifying application behavior. Helps identify false positives 
 where test steps are executed but no outcome is validated, reducing the risk of unnoticed regressions.`
     },
     {
-      key: 'deepThenNesting',
-      prompt: 'Enable .then() chain nesting analysis?',
-      description: `Warns against excessive chaining of .then() calls, which can obscure test intent and increase 
-cognitive load. Encourages flatter, more readable test structures using Cypress’ built-in chaining instead.`
+      key: 'deepNestingAnalysis',
+      prompt: 'Enable deep nesting analysis?',
+      description: `Warns against excessive nesting and use of .then() calls, which can obscure test intent and increase 
+cognitive load. Encourages flatter, more readable test structures using Cypress’ built-in chaining.`
     },
     {
       key: 'brittleSelectors',
@@ -89,6 +105,13 @@ Encourages use of stable selectors like data attributes to improve test resilien
 for clarity, debuggability, and better isolation of test failures.`
     },
     {
+      key: 'longTestStructure',
+      prompt: 'Enable long test structure analysis?',
+      description: `Detects tests that are overly long, cover multiple user flows, or lack clear structure. 
+Suggests breaking tests into smaller, focused units with clear assertions to improve reliability, 
+maintainability, and test intent clarity. Helps reduce false positives and simplify debugging.`
+    },
+    {
       key: 'redundantShoulds',
       prompt: 'Enable .should() redundancy analysis?',
       description: `Identifies multiple chained assertions that test the same condition or are semantically redundant. 
@@ -101,20 +124,25 @@ Helps streamline tests by removing clutter and focusing on meaningful checks.`
 pseudo-tests that only check for element existence or rely on Cypress’ default retries to falsely indicate success.`
     },
     {
-      key: 'asyncAwaitConfusion',
-      prompt: 'Enable enhanced async/await misuse analysis?',
+      key: 'asyncAwaitAnalysis',
+      prompt: 'Enable enhanced async/await analysis?',
       description: `Highlights patterns where async/await is mixed incorrectly with Cypress' command queueing model, 
 which can lead to unexpected behavior. Promotes correct async handling using Cypress’ built-in command chaining.`
     }
   ];
 
-  // Intro
-  console.log('\n' + chalk.greenBright('🎛️  Welcome to TestCopilot Config Setup') + '\n');
+  // Display header once
+  console.clear();
+  console.log(chalk.whiteBright('╔════════════════════════════════════╗'));
+  console.log(chalk.whiteBright('║        TestCopilot CLI             ║'));
+  console.log(chalk.whiteBright('╚════════════════════════════════════╝'));
+  console.log('\n' + chalk.greenBright('💻  Welcome to TestCopilot Config Setup') + '\n');
   console.log(chalk.white(
     `TestCopilot is an advanced code analysis tool that reviews Cypress tests for common pitfalls, poor practices,\n` +
-    `and reliability risks — helping your team write clearer, more robust automated tests.\n`
+    `and reliability risks — helping your team write clearer, more robust automated tests.`
   ));
-  console.log(chalk.dim('Answer Y/N for each analysis option below.\n'));
+  console.log(chalk.dim('\nPress any key to continue...'));
+  await waitForKeypress();
 
   const answers: ConfigAnswers = {
     checkers: {},
@@ -124,40 +152,44 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
 
   // Prompt for each checker individually
   for (const checker of checkers) {
-    console.log('\n' + chalk.yellowBright(`${checker.prompt}\n`));
+    console.clear();
+    console.log(chalk.whiteBright('╔════════════════════════════════════╗'));
+    console.log(chalk.whiteBright('║        TestCopilot CLI             ║'));
+    console.log(chalk.whiteBright('╚════════════════════════════════════╝'));
+    console.log('\n' + chalk.greenBright('💻  Welcome to TestCopilot Config Setup') + '\n');
+    console.log(chalk.yellowBright(`${checker.prompt}\n`));
     console.log(chalk.white(checker.description) + '\n');
-    const { enabled } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'enabled',
-        message: checker.prompt,
-        default: true
-      }
-    ]);
+
+    const enabled = await new Confirm({
+      message: checker.prompt,
+      initial: true,
+      prefix: '✔'
+    }).run();
+
     answers.checkers[checker.key] = enabled;
   }
 
   // Output format
-  const { outputFormat } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'outputFormat',
-      message: 'Select output format:',
-      choices: ['summary', 'json'],
-      default: 'summary'
-    }
-  ]);
+  console.clear();
+  console.log(chalk.whiteBright('╔════════════════════════════════════╗'));
+  console.log(chalk.whiteBright('║        TestCopilot CLI             ║'));
+  console.log(chalk.whiteBright('╚════════════════════════════════════╝'));
+  console.log('\n' + chalk.greenBright('💻  Welcome to TestCopilot Config Setup') + '\n');
+
+  const outputFormat = await new Select({
+    message: 'Select output format (use ↑/↓ arrows + Enter):',
+    choices: ['summary', 'json'],
+    initial: 0,
+    prefix: '✔'
+  }).run();
   answers.outputFormat = outputFormat;
 
   // Plain-English summaries
-  const { explain } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'explain',
-      message: 'Include plain-English code review summaries?',
-      default: true
-    }
-  ]);
+  const explain = await new Confirm({
+    message: 'Include plain-English code review summaries?',
+    initial: true,
+    prefix: '✔'
+  }).run();
   answers.explain = explain;
 
   // Build config file object
@@ -176,4 +208,3 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
 
 // Start CLI
 program.parse();
-

@@ -13,14 +13,15 @@ import path from 'path';
  */
 export interface TestCopilotConfig {
   checkers?: {
-    wait?: boolean;
-    thenNesting?: boolean;
+    raceCondition?: boolean;
+    assertionAnalysis?: boolean;
+    deepNesting?: boolean;
     brittleSelectors?: boolean;
-    longTests?: boolean;
+    longChains?: boolean;
+    longTestStructure?: boolean;
     redundantShoulds?: boolean;
     falseConfidence?: boolean;
-    missingAssertions?: boolean;
-    asyncConfusion?: boolean;
+    asyncAnalysis?: boolean;
   };
   outputFormat?: 'console' | 'summary' | 'both';
   explain?: boolean;
@@ -31,14 +32,15 @@ export interface TestCopilotConfig {
  */
 export const defaultConfig: TestCopilotConfig = {
   checkers: {
-    wait: true,
-    thenNesting: true,
+    raceCondition: true,
+    assertionAnalysis: true,   
+    deepNesting: true,
     brittleSelectors: true,
-    longTests: true,
+    longChains: true,
+    longTestStructure: true,
     redundantShoulds: true,
     falseConfidence: true,
-    missingAssertions: true,
-    asyncConfusion: true,
+    asyncAnalysis: true,
   },
   outputFormat: 'console',
   explain: false,
