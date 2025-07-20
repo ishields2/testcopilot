@@ -13,7 +13,7 @@ If no config file is present, defaults from the schema are applied automatically
 ```json
 {
   "checkers": {
-    "raceCondition": true,
+    "raceConditionAnalysis": true,
     "assertionAnalysis": true,
     "deepNesting": true,
     "brittleSelectors": true,

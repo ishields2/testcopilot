@@ -6,7 +6,7 @@
         "checkers": {
             "type": "object",
             "properties": {
-                "raceCondition": {
+                "raceConditionAnalysis": {
                     "type": "boolean",
                     "default": true
                 },

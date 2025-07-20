@@ -16,6 +16,10 @@ import { loadConfig } from './configLoader';   // Loads testcopilot.config.json 
 import { Confirm, Select } from 'enquirer';    // Prompts from Enquirer
 import readline from 'readline';               // For "press any key to continue"
 import glob = require('glob');                 // Glob pattern matching for file discovery
+import { registeredCheckers } from './checkers/registeredCheckers';
+import type { CheckerOutput } from './types/CheckerOutput';
+import { parse } from '@babel/parser';
+import { printCheckerResult } from './cli/output/printCheckerResult';
 
 const program = new Command(); // Create CLI instance
 
@@ -35,32 +39,43 @@ program
     console.log(chalk.greenBright('🔍 Final Config Applied:'));
     console.dir(config, { depth: null, colors: true });
 
-    // Find all test files
     let testFiles: string[];
     try {
       testFiles = getTestFiles(scanPath);
     } catch (err) {
-      console.error(chalk.red('Error reading path:'), err);
+      console.error(chalk.red('❌ Error reading path:'), err);
       return;
     }
 
     if (testFiles.length === 0) {
-      console.log(chalk.yellow('No test files found.'));
+      console.log(chalk.yellow('⚠️  No test files found.'));
       return;
     }
 
-    // Read file contents
     const filesWithContent = readFiles(testFiles);
 
-    // Log summary
-    console.log(chalk.cyan(`🔍 Scanning ${testFiles.length} test files...`));
-    filesWithContent.forEach(file => {
-      console.log(chalk.magenta(`\n--- ${file.path} ---`));
-      console.log(file.content.substring(0, 500)); // Show first 500 chars for preview
-    });
+    console.log(chalk.cyan(`\n📂 Scanning ${testFiles.length} test file(s)...`));
 
-    // TODO: Pass filesWithContent to your checkers for analysis
+    for (const file of filesWithContent) {
+      const { path: filePath, content } = file;
+
+      console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
+
+      const ast = parse(content, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx']
+      });
+      console.log('Registered checkers:', Object.keys(registeredCheckers));
+      console.log('Config checkers:', config.checkers);
+      for (const checker of Object.values(registeredCheckers)) {
+        if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
+        console.log(`Running checker: ${checker.key}`);
+        const result = checker.analyze({ path: filePath, content, ast });
+        printCheckerResult(result, filePath, config.explain);
+      }
+    }
   });
+
 
 // `init` command – interactively creates a config file
 program
@@ -99,7 +114,7 @@ async function runInit() {
   // Full list of checkers with key and rich description (keys match config.ts and schema)
   const checkers = [
     {
-      key: 'raceCondition',
+      key: 'raceConditionAnalysis',
       prompt: 'Enable race condition analysis?',
       description: `Enhanced race condition analysis – flags patterns that may introduce race conditions, 
 timing flakiness, or brittle test design. Offers alternative strategies such as custom retry logic, 

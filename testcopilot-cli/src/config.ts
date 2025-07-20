@@ -13,7 +13,7 @@ import path from 'path';
  */
 export interface TestCopilotConfig {
   checkers?: {
-    raceCondition?: boolean;
+    raceConditionAnalysis?: boolean;
     assertionAnalysis?: boolean;
     deepNesting?: boolean;
     brittleSelectors?: boolean;
@@ -32,7 +32,7 @@ export interface TestCopilotConfig {
  */
 export const defaultConfig: TestCopilotConfig = {
   checkers: {
-    raceCondition: true,
+    raceConditionAnalysis: true,
     assertionAnalysis: true,
     deepNesting: true,
     brittleSelectors: true,

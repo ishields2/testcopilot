@@ -88,7 +88,7 @@ TestCopilot uses separate config files for CLI and UI, but both validate and app
 ```json
 {
   "checkers": {
-    "raceCondition": true,
+    "raceConditionAnalysis": true,
     "assertionAnalysis": true,
     "deepNesting": true,
     "brittleSelectors": true,
