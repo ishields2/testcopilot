@@ -15,6 +15,7 @@ import { loadConfig } from './configLoader';   // Loads testcopilot.config.json 
 // @ts-ignore
 import { Confirm, Select } from 'enquirer';    // Prompts from Enquirer
 import readline from 'readline';               // For "press any key to continue"
+import glob = require('glob');                 // Glob pattern matching for file discovery
 
 const program = new Command(); // Create CLI instance
 
@@ -31,11 +32,34 @@ program
   .argument('<path>', 'file or folder to scan')
   .action((scanPath) => {
     const config = loadConfig();
-    // Log the final config after merging and schema validation
     console.log(chalk.greenBright('🔍 Final Config Applied:'));
     console.dir(config, { depth: null, colors: true });
-    console.log(chalk.cyan(`🔍 Scanning ${scanPath}...`));
-    // File scanning logic will go here
+
+    // Find all test files
+    let testFiles: string[];
+    try {
+      testFiles = getTestFiles(scanPath);
+    } catch (err) {
+      console.error(chalk.red('Error reading path:'), err);
+      return;
+    }
+
+    if (testFiles.length === 0) {
+      console.log(chalk.yellow('No test files found.'));
+      return;
+    }
+
+    // Read file contents
+    const filesWithContent = readFiles(testFiles);
+
+    // Log summary
+    console.log(chalk.cyan(`🔍 Scanning ${testFiles.length} test files...`));
+    filesWithContent.forEach(file => {
+      console.log(chalk.magenta(`\n--- ${file.path} ---`));
+      console.log(file.content.substring(0, 500)); // Show first 500 chars for preview
+    });
+
+    // TODO: Pass filesWithContent to your checkers for analysis
   });
 
 // `init` command – interactively creates a config file
@@ -206,6 +230,24 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
   const outputPath = path.resolve('testcopilot.config.json');
   fs.writeFileSync(outputPath, JSON.stringify(config, null, 2));
   console.log(`\n✅ Config file created at ${outputPath}\n`);
+}
+
+// Helper to get all test files (.js, .ts) in a folder or single file
+function getTestFiles(scanPath: string): string[] {
+  const stat = fs.statSync(scanPath);
+  if (stat.isFile()) {
+    return [scanPath];
+  }
+  // Recursively find all .js and .ts files
+  return glob.sync(`${scanPath.replace(/\\/g, '/')}/**/*.{js,ts}`, { nodir: true });
+}
+
+// Helper to read file contents
+function readFiles(filePaths: string[]): { path: string, content: string }[] {
+  return filePaths.map(path => ({
+    path,
+    content: fs.readFileSync(path, 'utf-8')
+  }));
 }
 
 // Start CLI
