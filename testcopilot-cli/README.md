@@ -1,3 +1,34 @@
+# 🗂️ Configuration Strategy
+
+TestCopilot CLI uses a shared schema for config validation and defaults, and keeps CLI and UI config files separate:
+
+- **CLI config:** `testcopilot.config.json` (used by CLI commands)
+- **UI config:** `testcopilot.ui.config.json` (used by the future UI)
+- **Shared schema:** `testcopilot.config.schema.json` (used for validation and default values)
+
+If no config file is present, defaults from the schema are applied automatically. Config files are never overwritten by the other tool (UI does not overwrite CLI config, and vice versa).
+
+### Example Config
+
+```json
+{
+  "checkers": {
+    "raceCondition": true,
+    "assertionAnalysis": true,
+    "deepNesting": true,
+    "brittleSelectors": true,
+    "longChains": true,
+    "longTestStructure": true,
+    "redundantShoulds": true,
+    "falseConfidence": true,
+    "asyncAnalysis": true
+  },
+  "outputFormat": "console",
+  "explain": false
+}
+```
+
+Run `tcp init` to interactively generate a config file with all options and defaults.
 # TestCopilot CLI
 
 **TestCopilot CLI** is the command-line tool that powers the Cypress test analysis engine. It detects poor practices in `.js` and `.ts` Cypress files and outputs a plain-English summary to help stabilize E2E tests.

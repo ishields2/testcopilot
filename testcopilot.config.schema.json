@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "TestCopilot Config",
+    "type": "object",
+    "properties": {
+        "checkers": {
+            "type": "object",
+            "properties": {
+                "raceCondition": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "assertionAnalysis": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "deepNesting": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "brittleSelectors": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "longChains": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "longTestStructure": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "redundantShoulds": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "falseConfidence": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "asyncAnalysis": {
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        },
+        "outputFormat": {
+            "type": "string",
+            "enum": [
+                "console",
+                "summary",
+                "both"
+            ],
+            "default": "console"
+        },
+        "explain": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "checkers",
+        "outputFormat",
+        "explain"
+    ]
+}

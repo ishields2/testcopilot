@@ -33,7 +33,7 @@ export interface TestCopilotConfig {
 export const defaultConfig: TestCopilotConfig = {
   checkers: {
     raceCondition: true,
-    assertionAnalysis: true,   
+    assertionAnalysis: true,
     deepNesting: true,
     brittleSelectors: true,
     longChains: true,

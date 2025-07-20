@@ -31,7 +31,9 @@ program
   .argument('<path>', 'file or folder to scan')
   .action((scanPath) => {
     const config = loadConfig();
-    console.log(chalk.yellowBright('✅ Loaded Config:'), config);
+    // Log the final config after merging and schema validation
+    console.log(chalk.greenBright('🔍 Final Config Applied:'));
+    console.dir(config, { depth: null, colors: true });
     console.log(chalk.cyan(`🔍 Scanning ${scanPath}...`));
     // File scanning logic will go here
   });
@@ -70,10 +72,10 @@ async function runInit() {
     [key: string]: any;
   };
 
-  // Full list of checkers with key and rich description
+  // Full list of checkers with key and rich description (keys match config.ts and schema)
   const checkers = [
     {
-      key: 'raceConditionAnalysis',
+      key: 'raceCondition',
       prompt: 'Enable race condition analysis?',
       description: `Enhanced race condition analysis – flags patterns that may introduce race conditions, 
 timing flakiness, or brittle test design. Offers alternative strategies such as custom retry logic, 
@@ -87,7 +89,7 @@ tests and encourages more robust async handling.`
 where test steps are executed but no outcome is validated, reducing the risk of unnoticed regressions.`
     },
     {
-      key: 'deepNestingAnalysis',
+      key: 'deepNesting',
       prompt: 'Enable deep nesting analysis?',
       description: `Warns against excessive nesting and use of .then() calls, which can obscure test intent and increase 
 cognitive load. Encourages flatter, more readable test structures using Cypress’ built-in chaining.`
@@ -99,7 +101,7 @@ cognitive load. Encourages flatter, more readable test structures using Cypress�
 Encourages use of stable selectors like data attributes to improve test resilience against UI changes.`
     },
     {
-      key: 'longCommandChains',
+      key: 'longChains',
       prompt: 'Enable enhanced command chain analysis?',
       description: `Detects test steps that involve excessively chained commands. Encourages breaking up tests 
 for clarity, debuggability, and better isolation of test failures.`
@@ -118,13 +120,13 @@ maintainability, and test intent clarity. Helps reduce false positives and simpl
 Helps streamline tests by removing clutter and focusing on meaningful checks.`
     },
     {
-      key: 'falseConfidenceHeuristic',
+      key: 'falseConfidence',
       prompt: 'Enable false confidence analysis?',
       description: `Detects tests that pass without validating any meaningful behavior. Useful for catching 
 pseudo-tests that only check for element existence or rely on Cypress’ default retries to falsely indicate success.`
     },
     {
-      key: 'asyncAwaitAnalysis',
+      key: 'asyncAnalysis',
       prompt: 'Enable enhanced async/await analysis?',
       description: `Highlights patterns where async/await is mixed incorrectly with Cypress' command queueing model, 
 which can lead to unexpected behavior. Promotes correct async handling using Cypress’ built-in command chaining.`

@@ -3,7 +3,7 @@
 - [x] Define MVP scope and config strategy (including CLI + UI)
 - [x] Add CLI flags and configuration file support (`testcopilot.config.json`)
 - [x] Implement interactive CLI setup (`testcopilot init`) to scaffold config
-- [ ] Sync default config settings between CLI and UI
+- [x] Sync default config settings between CLI and UI
 - [ ] Add shared config schema file for CLI/UI validation
 
 ## ⚙️ MVP CLI Features
@@ -33,16 +33,4 @@
 - [ ] Add config settings panel to match CLI options
 - [ ] Add AI summary toggle for UI analysis
 - [ ] Allow downloading PDF report from UI
-
-## 📣 Outreach & Discovery
-- [ ] Post initial Reddit discovery thread
-- [ ] Log replies and group by themes (frustration types, etc.)
-- [ ] Draft outreach form (Typeform/Google Form)
-- [ ] Identify 10 people to follow up with
-- [ ] Prep early “thanks for interest” email template
-
-## 🧽 Polish & Launch Prep
 - [ ] Add usage documentation for CLI and UI
-- [ ] Push all working code to GitHub
-- [ ] Create MVP enhancement backlog (post-Phase 1)
-- [ ] Write Phase 1 post-mortem summary
