@@ -12,7 +12,22 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
         const aliasMap = new Set<string>();
         const actionNodes: { line: number; command: string; hasChainedAssertion: boolean }[] = [];
         const assertionLines = new Set<number>();
-        const actionCommands = ['click', 'type', 'select', 'check', 'uncheck', 'trigger'];
+        const actionCommands = [
+            'click',
+            'type',
+            'clear',
+            'check',
+            'uncheck',
+            'select',
+            'dblclick',
+            'rightclick',
+            'focus',
+            'blur',
+            'submit',
+            'trigger',
+            'scrollIntoView',
+            'scrollTo'
+        ];
         const assertionMethods = ['should', 'contains', 'expect'];
 
         if (!ast) {
@@ -87,49 +102,45 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     }
                 }
 
-                // Track cy.get(...).click(), cy.get(...).type(), etc. and check for chained assertions
+                // Track any cy.<action>() regardless of how deep the chain is
                 if (
                     callee.type === 'MemberExpression' &&
-                    callee.object.type === 'CallExpression' &&
-                    callee.object.callee.type === 'MemberExpression' &&
-                    callee.object.callee.object.type === 'Identifier' &&
-                    callee.object.callee.object.name === 'cy' &&
                     callee.property.type === 'Identifier' &&
                     actionCommands.includes(callee.property.name)
                 ) {
-                    const actionLine = node.loc?.start?.line;
-                    let hasChainedAssertion = false;
-                    let parent: typeof path.parentPath | null = path.parentPath;
-
-                    // Traverse up the chain to see if an assertion is present
-                    while (parent !== null && parent.node.type === 'MemberExpression') {
-                        if (
-                            parent.node.property.type === 'Identifier' &&
-                            assertionMethods.includes(parent.node.property.name)
-                        ) {
-                            hasChainedAssertion = true;
-                            break;
-                        }
-                        parent = parent.parentPath;
+                    // Walk up to see if this is part of a cy chain
+                    let root: typeof callee.object | null = callee.object;
+                    while (root && root.type === 'CallExpression') {
+                        root = root.callee?.type === 'MemberExpression' ? root.callee.object : null;
                     }
 
-                    // Only add if parent is not another action command (i.e., last in chain)
-                    const parentIsAction =
-                        path.parentPath &&
-                        path.parentPath.node.type === 'MemberExpression' &&
-                        path.parentPath.node.property.type === 'Identifier' &&
-                        actionCommands.includes(path.parentPath.node.property.name);
+                    if (root?.type === 'Identifier' && root.name === 'cy') {
+                        const actionLine = node.loc?.start?.line;
+                        let hasChainedAssertion = false;
+                        let parent: typeof path.parentPath | null = path.parentPath;
 
-                    if (!parentIsAction && typeof actionLine === 'number') {
-                        actionNodes.push({
-                            line: actionLine,
-                            command: callee.property.name,
-                            hasChainedAssertion
-                        });
+                        while (parent !== null && parent.node.type === 'MemberExpression') {
+                            if (
+                                parent.node.property.type === 'Identifier' &&
+                                assertionMethods.includes(parent.node.property.name)
+                            ) {
+                                hasChainedAssertion = true;
+                                break;
+                            }
+                            parent = parent.parentPath;
+                        }
+
+                        if (typeof actionLine === 'number') {
+                            actionNodes.push({
+                                line: actionLine,
+                                command: callee.property.name,
+                                hasChainedAssertion,
+                            });
+                        }
                     }
                 }
 
-                // Track assertion lines (should, contains, expect)
+                // Track assertion lines
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.property.type === 'Identifier' &&
@@ -150,11 +161,12 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
             },
         });
 
-        // Add issues for actions with no assertion within the next 2 lines and not chained
+        // Flag actions not followed by assertions
         for (const action of actionNodes) {
             const hasFollowUp =
                 action.hasChainedAssertion ||
                 [...assertionLines].some(line => line > action.line && line <= action.line + 2);
+
             if (!hasFollowUp) {
                 issues.push({
                     message: `User action "cy.${action.command}()" is not followed by a check to confirm the app responded.`,
