@@ -26,4 +26,11 @@ export interface CheckerResult {
 
     /** Snippet of the affected code (optional) */
     contextCode?: string;
+
+    /** Plain text explanation of the issue */
+    plainExplanation?: string;
+
+    /** Optional fix code snippet */
+    fix?: string;
+
 }

@@ -2,14 +2,14 @@
   "checkers": {
     "raceConditionAnalysis": true,
     "assertionAnalysis": false,
-    "deepNesting": true,
+    "deepNesting": false,
     "brittleSelectors": false,
-    "longChains": true,
+    "longChains": false,
     "longTestStructure": false,
-    "redundantShoulds": true,
+    "redundantShoulds": false,
     "falseConfidence": false,
-    "asyncAnalysis": true
+    "asyncAnalysis": false
   },
-  "outputFormat": "console",
-  "explain": false
+  "outputFormat": "summary",
+  "explain": true
 }
