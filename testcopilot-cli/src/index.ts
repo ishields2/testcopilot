@@ -36,9 +36,6 @@ program
   .argument('<path>', 'file or folder to scan')
   .action((scanPath) => {
     const config = loadConfig();
-    console.log(chalk.greenBright('🔍 Final Config Applied:'));
-    console.dir(config, { depth: null, colors: true });
-
     let testFiles: string[];
     try {
       testFiles = getTestFiles(scanPath);
@@ -65,8 +62,6 @@ program
         sourceType: 'module',
         plugins: ['typescript', 'jsx']
       });
-      console.log('Registered checkers:', Object.keys(registeredCheckers));
-      console.log('Config checkers:', config.checkers);
       for (const checker of Object.values(registeredCheckers)) {
         if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
         console.log(`Running checker: ${checker.key}`);
@@ -249,12 +244,13 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
 
 // Helper to get all test files (.js, .ts) in a folder or single file
 function getTestFiles(scanPath: string): string[] {
-  const stat = fs.statSync(scanPath);
+  const absPath = path.resolve(scanPath);
+  const stat = fs.statSync(absPath);
   if (stat.isFile()) {
-    return [scanPath];
+    return [absPath];
   }
   // Recursively find all .js and .ts files
-  return glob.sync(`${scanPath.replace(/\\/g, '/')}/**/*.{js,ts}`, { nodir: true });
+  return glob.sync(`${absPath.replace(/\\/g, '/')}/**/*.{js,ts}`, { nodir: true });
 }
 
 // Helper to read file contents

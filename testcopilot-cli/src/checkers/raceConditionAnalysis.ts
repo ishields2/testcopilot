@@ -10,8 +10,10 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
     analyze({ path, content, ast }: { path: string; content: string; ast?: any }): CheckerOutput {
         const issues: CheckerResult[] = [];
         const aliasMap = new Set<string>();
-        const visitedActionLines = new Set<number>();
+        const actionNodes: { line: number; command: string }[] = [];
+        const assertionLines = new Set<number>();
         const actionCommands = ['click', 'type', 'select', 'check', 'uncheck', 'trigger'];
+        const assertionMethods = ['should', 'contains', 'expect'];
 
         if (!ast) {
             ast = parse(content, {
@@ -21,8 +23,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
         }
 
         traverse(ast, {
-            CallExpression(path) {
-                const { node } = path;
+            CallExpression({ node }) {
                 const callee = node.callee;
 
                 // Track aliases from cy.intercept(...).as('alias')
@@ -50,7 +51,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
 
                     if (arg.type === 'NumericLiteral' && arg.value >= 500) {
                         issues.push({
-                            message: `Hardcoded wait detected: cy.wait(${arg.value})`,
+                            message: `Hardcoded delay of ${arg.value}ms — using fixed waits causes flakiness and unreliable tests.`,
                             location: node.loc?.start && {
                                 line: node.loc.start.line,
                                 column: node.loc.start.column,
@@ -69,7 +70,9 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                         const loc = node.loc?.start;
 
                         issues.push({
-                            message: `Alias-based wait detected: cy.wait('${alias}')`,
+                            message: hasIntercept
+                                ? `cy.wait('${alias}') used — alias is defined, but should be followed by a UI assertion to confirm the app reacted as expected.`
+                                : `cy.wait('${alias}') used without cy.intercept() — this wait is fragile and may break if the request doesn't fire.`,
                             location: loc && { line: loc.line, column: loc.column },
                             severity: hasIntercept ? 'medium' : 'high',
                             contextCode: loc ? content.split('\n')[loc.line - 1]?.trim() : undefined,
@@ -83,51 +86,64 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     }
                 }
 
-                // Track action commands like cy.click(), then look ahead for assertions
+                // Track cy.get(...).click(), cy.get(...).type(), etc.
                 if (
                     callee.type === 'MemberExpression' &&
-                    callee.object.type === 'Identifier' &&
-                    callee.object.name === 'cy' &&
+                    callee.object.type === 'CallExpression' &&
+                    callee.object.callee.type === 'MemberExpression' &&
+                    callee.object.callee.object.type === 'Identifier' &&
+                    callee.object.callee.object.name === 'cy' &&
                     callee.property.type === 'Identifier' &&
                     actionCommands.includes(callee.property.name)
                 ) {
-                    const actionLine = node.loc?.start.line;
-                    if (actionLine) visitedActionLines.add(actionLine);
+                    const actionLine = node.loc?.start?.line;
+                    if (typeof actionLine === 'number') {
+                        actionNodes.push({ line: actionLine, command: callee.property.name });
+                    }
                 }
 
-                // Remove action lines that are followed by assertions
+                // Track assertion lines (should, contains, expect)
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.property.type === 'Identifier' &&
-                    ['should', 'contains'].includes(callee.property.name)
+                    assertionMethods.includes(callee.property.name)
                 ) {
-                    const maybeAssertionLine = node.loc?.start.line;
-                    if (maybeAssertionLine && visitedActionLines.has(maybeAssertionLine - 1)) {
-                        visitedActionLines.delete(maybeAssertionLine - 1);
-                    }
+                    const line = node.loc?.start?.line;
+                    if (typeof line === 'number') assertionLines.add(line);
+                }
+
+                // Track expect() assertions
+                if (
+                    callee.type === 'Identifier' &&
+                    callee.name === 'expect'
+                ) {
+                    const line = node.loc?.start?.line;
+                    if (typeof line === 'number') assertionLines.add(line);
                 }
             },
         });
 
-        // Action commands missing follow-up assertions
-        for (const line of visitedActionLines) {
-            issues.push({
-                message: `Action command without follow-up assertion (e.g. should(), contains())`,
-                location: { line },
-                severity: 'medium',
-                contextCode: content.split('\n')[line - 1]?.trim(),
-                plainExplanation: `This test performs a user action (e.g. click), but doesn't check whether the app responded as expected. This can lead to false positives.`,
-                fix: `Add a UI assertion after the action — e.g. cy.get(...).should('contain', 'ExpectedText') — to confirm the app changed state.`,
-            });
+        // Add issues for actions with no assertion within the next 2 lines
+        for (const action of actionNodes) {
+            const hasFollowUp = [...assertionLines].some(line => line > action.line && line <= action.line + 2);
+            if (!hasFollowUp) {
+                issues.push({
+                    message: `User action "cy.${action.command}()" is not followed by a check to confirm the app responded.`,
+                    location: { line: action.line },
+                    severity: 'medium',
+                    contextCode: content.split('\n')[action.line - 1]?.trim(),
+                    plainExplanation: `The test simulates a user interaction using "cy.${action.command}()", but it doesn't verify whether the app responded correctly. Without a follow-up check, the test might pass even if the application fails to react — leading to false confidence in test results.`,
+                    fix: `After calling "cy.${action.command}()", add a UI assertion such as "cy.get(...).should(...)" to confirm the expected change happened. This helps ensure the app responded as intended.`,
+                });
+            }
         }
 
-        // File-level score
         const fileScore =
-            issues.length >= 4 ? 'Very Poor' :
-                issues.length === 3 ? 'Poor' :
-                    issues.length === 2 ? 'Average' :
-                        issues.length === 1 ? 'Good' :
-                            'Very Good';
+            issues.length >= 4 ? 'Very Poor'
+                : issues.length === 3 ? 'Poor'
+                    : issues.length === 2 ? 'Average'
+                        : issues.length === 1 ? 'Good'
+                            : 'Very Good';
 
         const plainSummary = `
 This test file was rated **${fileScore}** for async reliability.
@@ -139,7 +155,7 @@ ${issues.length === 0
 These issues mean the tests might pass even when the app is broken, or fail when the app is actually working — leading to wasted time debugging false results.
 
 Improving these tests will make them more stable, trustworthy, and maintainable for both developers and QA teams.`}
-    `.trim();
+`.trim();
 
         return {
             checkerName: 'raceConditionAnalysis',
@@ -147,5 +163,5 @@ Improving these tests will make them more stable, trustworthy, and maintainable 
             fileScore,
             plainSummary,
         };
-    }
+    },
 };
