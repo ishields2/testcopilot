@@ -10,7 +10,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
     analyze({ path, content, ast }: { path: string; content: string; ast?: any }): CheckerOutput {
         const issues: CheckerResult[] = [];
         const aliasMap = new Set<string>();
-        const actionNodes: { line: number; command: string }[] = [];
+        const actionNodes: { line: number; command: string; hasChainedAssertion: boolean }[] = [];
         const assertionLines = new Set<number>();
         const actionCommands = ['click', 'type', 'select', 'check', 'uncheck', 'trigger'];
         const assertionMethods = ['should', 'contains', 'expect'];
@@ -23,7 +23,8 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
         }
 
         traverse(ast, {
-            CallExpression({ node }) {
+            CallExpression(path) {
+                const { node } = path;
                 const callee = node.callee;
 
                 // Track aliases from cy.intercept(...).as('alias')
@@ -86,7 +87,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     }
                 }
 
-                // Track cy.get(...).click(), cy.get(...).type(), etc.
+                // Track cy.get(...).click(), cy.get(...).type(), etc. and check for chained assertions
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.object.type === 'CallExpression' &&
@@ -97,8 +98,34 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     actionCommands.includes(callee.property.name)
                 ) {
                     const actionLine = node.loc?.start?.line;
-                    if (typeof actionLine === 'number') {
-                        actionNodes.push({ line: actionLine, command: callee.property.name });
+                    let hasChainedAssertion = false;
+                    let parent: typeof path.parentPath | null = path.parentPath;
+
+                    // Traverse up the chain to see if an assertion is present
+                    while (parent !== null && parent.node.type === 'MemberExpression') {
+                        if (
+                            parent.node.property.type === 'Identifier' &&
+                            assertionMethods.includes(parent.node.property.name)
+                        ) {
+                            hasChainedAssertion = true;
+                            break;
+                        }
+                        parent = parent.parentPath;
+                    }
+
+                    // Only add if parent is not another action command (i.e., last in chain)
+                    const parentIsAction =
+                        path.parentPath &&
+                        path.parentPath.node.type === 'MemberExpression' &&
+                        path.parentPath.node.property.type === 'Identifier' &&
+                        actionCommands.includes(path.parentPath.node.property.name);
+
+                    if (!parentIsAction && typeof actionLine === 'number') {
+                        actionNodes.push({
+                            line: actionLine,
+                            command: callee.property.name,
+                            hasChainedAssertion
+                        });
                     }
                 }
 
@@ -123,9 +150,11 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
             },
         });
 
-        // Add issues for actions with no assertion within the next 2 lines
+        // Add issues for actions with no assertion within the next 2 lines and not chained
         for (const action of actionNodes) {
-            const hasFollowUp = [...assertionLines].some(line => line > action.line && line <= action.line + 2);
+            const hasFollowUp =
+                action.hasChainedAssertion ||
+                [...assertionLines].some(line => line > action.line && line <= action.line + 2);
             if (!hasFollowUp) {
                 issues.push({
                     message: `User action "cy.${action.command}()" is not followed by a check to confirm the app responded.`,
