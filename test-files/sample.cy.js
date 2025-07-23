@@ -18,7 +18,7 @@ describe('Follow-up Assertion Coverage Test', () => {
       .should('contain', 'Settings');
   });
 
-  // // ❌ 3. Long chain with no assertion — should be flagged
+  // ❌ 3. Long chain with no assertion — should be flagged
   it('should flag long chain without any assertion', () => {
     cy.get('#notifications')
       .find('.alert')
@@ -44,7 +44,7 @@ describe('Follow-up Assertion Coverage Test', () => {
       .submit(); // ❌ no assertion
   });
 
-  // // ✅ 5. Long chain across lines but ends in assertion — should NOT be flagged
+  // ✅ 5. Long chain across lines but ends in assertion — should NOT be flagged
   it('should not flag multiline chain that ends in assertion', () => {
     cy
       .get('#search')
@@ -126,4 +126,11 @@ describe('Follow-up Assertion Coverage Test', () => {
   it('scrollTo without assertion', () => {
     cy.scrollTo('bottom'); // ❌ No assertion
   });
+  it('should not flag cy.click() followed by an expect() inside .then()', () => {
+    cy.get('#submit').click().then(() => {
+      expect(true).to.equal(true); // ✅ This should be detected as a follow-up assertion
+    });
+  });
+
+
 });

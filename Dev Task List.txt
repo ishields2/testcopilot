@@ -4,11 +4,13 @@
 - [x] Add CLI flags and configuration file support (`testcopilot.config.json`)
 - [x] Implement interactive CLI setup (`testcopilot init`) to scaffold config
 - [x] Sync default config settings between CLI and UI
-- [ ] Add shared config schema file for CLI/UI validation
+- [x] Add shared config schema file for CLI/UI validation
 
 ## ⚙️ MVP CLI Features
-- [ ] Implement file ingestion logic (sanner logic)
-- [ ] Add checker for `.wait()` usage
+- [x] Implement file ingestion logic (sanner logic)
+- [x] Add checker for raceConditionAnalysis
+- [ ] Logic to determine if file is a test file
+- [ ] Logic to traverse same file and static relative path import function calls 
 - [ ] Add checker for excessive `.then()` nesting
 - [ ] Add checker for brittle selectors
 - [ ] Add checker for long test chains
@@ -16,11 +18,16 @@
 - [ ] Add checker for False Confidence Heuristic
 - [ ] Add checker for missing assertions
 - [ ] Add checker for Async/Await confusion
+- [ ] Add advanced codebase design checker 
+- [ ] Add cypress/playwright detection logic 
+- [ ] Add playwright checker for missing raceConditionAnalysis
+- [ ] Add playwright checker for missing brittleSelectors
 - [ ] Format output with severity + recommendations
 - [ ] Add optional plain-English summary (Code Review output)
 - [ ] Add unit tests for checkers
 - [ ] Add GPT-powered summary and improvement suggestions (--explain flag)
 - [ ] Add PDF report output (CLI)
+- [ ] VSCode Extension for Syntax Highlighting
 
 ## 💻 MVP UI (File + Folder Upload)
 - [ ] Create frontend file upload project repo

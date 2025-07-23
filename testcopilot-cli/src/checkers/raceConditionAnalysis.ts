@@ -13,22 +13,10 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
         const actionNodes: { line: number; command: string; hasChainedAssertion: boolean }[] = [];
         const assertionLines = new Set<number>();
         const actionCommands = [
-            'click',
-            'type',
-            'clear',
-            'check',
-            'uncheck',
-            'select',
-            'dblclick',
-            'rightclick',
-            'focus',
-            'blur',
-            'submit',
-            'trigger',
-            'scrollIntoView',
-            'scrollTo'
+            'click', 'type', 'clear', 'check', 'uncheck', 'select', 'dblclick',
+            'rightclick', 'focus', 'blur', 'submit', 'trigger', 'scrollIntoView', 'scrollTo'
         ];
-        const assertionMethods = ['should', 'contains', 'expect'];
+        const assertionMethods = ['should', 'contains', 'expect', 'and', 'assert'];
 
         if (!ast) {
             ast = parse(content, {
@@ -54,7 +42,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     aliasMap.add(`@${alias}`);
                 }
 
-                // Detect cy.wait(1000)
+                // Detect cy.wait(1000) or cy.wait('@alias')
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.object.type === 'Identifier' &&
@@ -64,26 +52,22 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     node.arguments.length === 1
                 ) {
                     const arg = node.arguments[0];
+                    const loc = node.loc?.start;
 
                     if (arg.type === 'NumericLiteral' && arg.value >= 500) {
                         issues.push({
                             message: `Hardcoded delay of ${arg.value}ms — using fixed waits causes flakiness and unreliable tests.`,
-                            location: node.loc?.start && {
-                                line: node.loc.start.line,
-                                column: node.loc.start.column,
-                            },
+                            location: loc && { line: loc.line, column: loc.column },
                             severity: 'high',
-                            contextCode: node.loc?.start ? content.split('\n')[node.loc.start.line - 1]?.trim() : undefined,
+                            contextCode: loc ? content.split('\n')[loc.line - 1]?.trim() : undefined,
                             plainExplanation: `Using fixed delays like this can cause flakiness. If the app responds faster or slower than expected, the test may pass or fail unpredictably.`,
                             fix: `Replace with a condition-based wait like cy.get(...).should(...) or use cy.intercept() to wait for a specific network call.`,
                         });
                     }
 
-                    // Detect cy.wait('@alias')
                     if (arg.type === 'StringLiteral' && arg.value.startsWith('@')) {
                         const alias = arg.value;
                         const hasIntercept = aliasMap.has(alias);
-                        const loc = node.loc?.start;
 
                         issues.push({
                             message: hasIntercept
@@ -102,14 +86,13 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     }
                 }
 
-                // Track any cy.<action>() regardless of how deep the chain is
+                // Detect actions
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.property.type === 'Identifier' &&
                     actionCommands.includes(callee.property.name)
                 ) {
-                    // Walk up to see if this is part of a cy chain
-                    let root: typeof callee.object | null = callee.object;
+                    let root: any = callee.object;
                     while (root && root.type === 'CallExpression') {
                         root = root.callee?.type === 'MemberExpression' ? root.callee.object : null;
                     }
@@ -119,7 +102,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                         let hasChainedAssertion = false;
                         let parent: typeof path.parentPath | null = path.parentPath;
 
-                        while (parent !== null && parent.node.type === 'MemberExpression') {
+                        while (parent && parent.node.type === 'MemberExpression') {
                             if (
                                 parent.node.property.type === 'Identifier' &&
                                 assertionMethods.includes(parent.node.property.name)
@@ -140,7 +123,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     }
                 }
 
-                // Track assertion lines
+                // Detect assertion-like lines
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.property.type === 'Identifier' &&
@@ -150,18 +133,54 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     if (typeof line === 'number') assertionLines.add(line);
                 }
 
-                // Track expect() assertions
-                if (
-                    callee.type === 'Identifier' &&
-                    callee.name === 'expect'
-                ) {
+                // expect()
+                if (callee.type === 'Identifier' && callee.name === 'expect') {
                     const line = node.loc?.start?.line;
                     if (typeof line === 'number') assertionLines.add(line);
+                }
+
+                // .then(...) with expect or should
+                if (
+                    callee.type === 'MemberExpression' &&
+                    callee.property.type === 'Identifier' &&
+                    callee.property.name === 'then' &&
+                    node.arguments.length > 0
+                ) {
+                    const callback = node.arguments[0];
+                    if (
+                        callback.type === 'ArrowFunctionExpression' ||
+                        callback.type === 'FunctionExpression'
+                    ) {
+                        const body = callback.body;
+                        const bodyStatements = body.type === 'BlockStatement' ? body.body : [body];
+
+                        for (const stmt of bodyStatements) {
+                            if (stmt.type === 'ExpressionStatement' && stmt.expression.type === 'CallExpression') {
+                                const innerCall = stmt.expression;
+                                const innerCallee = innerCall.callee;
+
+                                if (
+                                    innerCallee.type === 'MemberExpression' &&
+                                    innerCallee.property.type === 'Identifier' &&
+                                    assertionMethods.includes(innerCallee.property.name)
+                                ) {
+                                    const line = innerCall.loc?.start?.line;
+                                    if (typeof line === 'number') assertionLines.add(line);
+                                }
+                                if (
+                                    innerCallee.type === 'Identifier' &&
+                                    innerCallee.name === 'expect'
+                                ) {
+                                    const line = innerCall.loc?.start?.line;
+                                    if (typeof line === 'number') assertionLines.add(line);
+                                }
+                            }
+                        }
+                    }
                 }
             },
         });
 
-        // Flag actions not followed by assertions
         for (const action of actionNodes) {
             const hasFollowUp =
                 action.hasChainedAssertion ||
@@ -195,7 +214,8 @@ ${issues.length === 0
 
 These issues mean the tests might pass even when the app is broken, or fail when the app is actually working — leading to wasted time debugging false results.
 
-Improving these tests will make them more stable, trustworthy, and maintainable for both developers and QA teams.`}
+Improving these tests will make them more stable, trustworthy, and maintainable for both developers and QA teams.`
+            }
 `.trim();
 
         return {
