@@ -10,7 +10,8 @@
     "falseConfidence": false,
     "asyncAnalysis": false
   },
-  "outputFormat": "console",
+  "outputFormat": "pdf",
   "explain": false,
+  "detailedResults": false,
   "codebaseAnalysis": true
 }

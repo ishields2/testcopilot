@@ -12,6 +12,7 @@
   "dependencies": {
     "enquirer": "^2.4.1",
     "next": "15.3.4",
+    "pdfmake": "^0.2.20",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

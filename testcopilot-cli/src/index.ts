@@ -21,6 +21,7 @@ import type { CheckerOutput } from './types/CheckerOutput';
 import { parse } from '@babel/parser';
 import { printCheckerResult } from './cli/output/printCheckerResult';
 import { aggregateCheckerResults } from './core/codebaseUtils';
+import { printPdfMakeReport } from './cli/output/printPdfMakeReport';
 
 const program = new Command(); // Create CLI instance
 
@@ -58,29 +59,63 @@ program
     const allResults: CheckerOutput[] = [];
     for (const file of filesWithContent) {
       const { path: filePath, content } = file;
-
-      console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
-
       const ast = parse(content, {
         sourceType: 'module',
         plugins: ['typescript', 'jsx']
       });
       for (const checker of Object.values(registeredCheckers)) {
         if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
-        console.log(`Running checker: ${checker.key}`);
         const result = checker.analyze({ path: filePath, content, ast });
-        printCheckerResult(result, filePath, config.explain);
         allResults.push(result);
+        // Console output logic
+        if (
+          config.outputFormat === 'console' ||
+          config.outputFormat === 'both'
+        ) {
+          if (config.detailedResults) {
+            console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
+            console.log(`Running checker: ${checker.key}`);
+            printCheckerResult(result, filePath, config.explain);
+          } else {
+            // Only print warnings and file score
+            console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
+            console.log(chalk.bold(`Score: ${result.numericScore} (${result.fileScore})`));
+            for (const issue of result.issues) {
+              const sev = issue.severity?.toUpperCase() || 'INFO';
+              const lineInfo = issue.location
+                ? `Line ${issue.location.line}${issue.location.column !== undefined ? `, Col ${issue.location.column}` : ''}`
+                : '';
+              console.log(`• [${sev}] ${issue.message}`);
+              if (lineInfo) console.log(`   ${lineInfo}`);
+              if (issue.contextCode) {
+                console.log(chalk.gray(`   > ${issue.contextCode}`));
+              }
+            }
+          }
+        }
       }
     }
 
     // Output codebase-level summary if enabled in config
     if (config.codebaseAnalysis) {
       const codebaseReport = aggregateCheckerResults(allResults);
-      console.log(chalk.greenBright('\n═══════════════════════════════════════════════════════════════════════════'));
-      console.log(chalk.whiteBright('Codebase Analysis Summary'));
-      console.log(chalk.greenBright('═══════════════════════════════════════════════════════════════════════════\n'));
-      console.log(codebaseReport.plainSummary);
+      // PDF output logic
+      if (config.outputFormat === 'pdf' || config.outputFormat === 'both') {
+        printPdfMakeReport(codebaseReport, 'testcopilot-report.pdf')
+          .then(() => {
+            console.log(chalk.greenBright(`\n✅ PDF report generated at: testcopilot-report.pdf\n`));
+          })
+          .catch((err) => {
+            console.error(chalk.red('❌ Failed to generate PDF report:'), err);
+          });
+      }
+      // Console summary output logic
+      if (config.outputFormat === 'console' || config.outputFormat === 'both') {
+        console.log(chalk.greenBright('\n═══════════════════════════════════════════════════════════════════════════'));
+        console.log(chalk.whiteBright('Codebase Analysis Summary'));
+        console.log(chalk.greenBright('═══════════════════════════════════════════════════════════════════════════\n'));
+        console.log(codebaseReport.plainSummary);
+      }
     }
   });
 
