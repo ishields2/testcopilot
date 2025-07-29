@@ -133,6 +133,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
             checkerName: 'raceConditionAnalysis',
             issues,
             fileScore,
+            numericScore,
             plainSummary,
         };
     },

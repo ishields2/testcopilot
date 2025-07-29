@@ -3,7 +3,12 @@ import type { CheckerOutput } from '../../types/sharedTypes';
 
 export function printCheckerResult(result: CheckerOutput, filePath: string, explain?: boolean): void {
     console.log(chalk.greenBright(`🔍 Checker: ${result.checkerName}`));
-    console.log(chalk.yellowBright(`📊 Score: ${result.fileScore}`));
+    // Output both numeric score and grade
+    if (typeof result.numericScore === 'number') {
+        console.log(chalk.bold(`Score: ${result.numericScore} (${result.fileScore})`));
+    } else {
+        console.log(chalk.bold(`Score: ${result.fileScore}`));
+    }
 
     for (const issue of result.issues) {
         const sev = issue.severity?.toUpperCase() || 'INFO';

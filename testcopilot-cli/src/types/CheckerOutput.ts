@@ -30,6 +30,9 @@ export interface CheckerOutput {
     /** Overall score for the file based on severity of issues */
     fileScore: FileScore;
 
+    /** Numeric score for the file (0-100) */
+    numericScore: number;
+
     /** Optional non-technical summary of the findings */
     plainSummary?: string;
 }

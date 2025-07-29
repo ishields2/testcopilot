@@ -23,8 +23,10 @@ If no config file is present, defaults from the schema are applied automatically
     "falseConfidence": true,
     "asyncAnalysis": true
   },
-  "outputFormat": "console",
-  "explain": false
+  "outputFormat": "summary",
+  "explain": false,
+  "codebaseAnalyis": true
+  
 }
 ```
 

@@ -76,5 +76,5 @@ export function gradeScore(score: number): Grade {
  */
 export function averageScore(scores: number[]): number {
     if (!scores.length) return 100;
-    return Math.max(0, Math.round(scores.reduce((a, b) => a + b, 0) / scores.length));
+    return Math.max(0, Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10);
 }

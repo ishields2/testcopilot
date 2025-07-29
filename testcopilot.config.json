@@ -10,6 +10,7 @@
     "falseConfidence": false,
     "asyncAnalysis": false
   },
-  "outputFormat": "summary",
-  "explain": true
+  "outputFormat": "console",
+  "explain": false,
+  "codebaseAnalysis": true
 }

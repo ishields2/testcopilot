@@ -27,31 +27,5 @@ describe('Follow-up Assertion Coverage Test', () => {
       .click(); // ❌ no assertion
   });
 
-  // ❌ 3. Long chain with no assertion — should be flagged
-  it('should flag long chain without any assertion', () => {
-    cy.get('#notifications')
-      .find('.alert')
-      .eq(1)
-      .eq()
-      .click(); // ❌ no assertion
-  });
-
-  // ❌ 3. Long chain with no assertion — should be flagged
-  it('should flag long chain without any assertion', () => {
-    cy.get('#notifications')
-      .find('.alert')
-      .eq(1)
-      .eq()
-      .click(); // ❌ no assertion
-  });
-
-  // ❌ 3. Long chain with no assertion — should be flagged
-  it('should flag long chain without any assertion', () => {
-    cy.get('#notifications')
-      .find('.alert')
-      .eq(1)
-      .eq()
-      .click(); // ❌ no assertion
-  });
 
 });

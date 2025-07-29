@@ -25,6 +25,7 @@ export interface TestCopilotConfig {
   };
   outputFormat?: 'console' | 'summary' | 'both';
   explain?: boolean;
+  codebaseAnalysis?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export const defaultConfig: TestCopilotConfig = {
   },
   outputFormat: 'console',
   explain: false,
+  codebaseAnalysis: true
 };
 
 /**

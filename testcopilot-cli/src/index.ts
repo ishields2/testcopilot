@@ -20,6 +20,7 @@ import { registeredCheckers } from './checkers/registeredCheckers';
 import type { CheckerOutput } from './types/CheckerOutput';
 import { parse } from '@babel/parser';
 import { printCheckerResult } from './cli/output/printCheckerResult';
+import { aggregateCheckerResults } from './core/codebaseUtils';
 
 const program = new Command(); // Create CLI instance
 
@@ -53,6 +54,8 @@ program
 
     console.log(chalk.cyan(`\n📂 Scanning ${testFiles.length} test file(s)...`));
 
+    // Collect all file-level results for codebase analysis
+    const allResults: CheckerOutput[] = [];
     for (const file of filesWithContent) {
       const { path: filePath, content } = file;
 
@@ -67,7 +70,17 @@ program
         console.log(`Running checker: ${checker.key}`);
         const result = checker.analyze({ path: filePath, content, ast });
         printCheckerResult(result, filePath, config.explain);
+        allResults.push(result);
       }
+    }
+
+    // Output codebase-level summary if enabled in config
+    if (config.codebaseAnalysis) {
+      const codebaseReport = aggregateCheckerResults(allResults);
+      console.log(chalk.greenBright('\n═══════════════════════════════════════════════════════════════════════════'));
+      console.log(chalk.whiteBright('Codebase Analysis Summary'));
+      console.log(chalk.greenBright('═══════════════════════════════════════════════════════════════════════════\n'));
+      console.log(codebaseReport.plainSummary);
     }
   });
 
