@@ -1,3 +1,45 @@
+### 🧮 How TestCopilot Scores Files
+
+TestCopilot gives each test file a score out of 100 based on two things:
+
+1. ✅ **How many tests pass**
+2. ⚠️ **How serious the problems are in the ones that fail**
+
+We split the score like this:
+
+- **70%** of the score is based on the pass rate  
+  → The more tests that pass, the higher the base score  
+- **30%** is based on the severity of issues in failing tests  
+  → We deduct points for each SEVERE, MEDIUM, or LOW issue
+
+---
+
+### 🔢 Example
+
+A file has 10 tests and 1 of them fails with a **MEDIUM** warning:
+
+- ✅ 9/10 tests passed → 90% pass rate → earns **63 points** (70 × 0.9)
+- ⚠️ 1 medium issue → subtract **3 points** from quality score (starts at 30)
+
+**Final score = 63 + 27 = 90**
+
+---
+
+### 🚨 Severity Deductions
+
+If a test has an issue, we deduct from the 30% "quality" portion of the score:
+
+- **SEVERE** → -6 points
+- **MEDIUM** → -3 points
+- **LOW** → -1.5 points
+
+---
+
+### ✅ Why This Makes Sense
+
+- Rewards files where most tests pass
+- Penalises files with more or worse issues
+- Avoids giving small files inflated scores from just a single pass
 # TestCopilot
 
 TestCopilot is a tool for analyzing Cypress test files to flag poor patterns (like `cy.wait()`, deep `.then()` nesting, brittle selectors, and missing assertions) and provide a plain-English summary.

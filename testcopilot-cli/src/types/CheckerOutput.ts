@@ -1,3 +1,8 @@
+/**
+ * This file defines the types for checker output in TestCopilot.
+ * CheckerOutput describes the result of analyzing a single test file, including issues, score, and summary.
+ * Used by all checkers to keep feedback and reporting consistent and easy to understand for everyone.
+ */
 import { CheckerResult } from './CheckerResult';
 
 /**
@@ -5,11 +10,11 @@ import { CheckerResult } from './CheckerResult';
  * Used to give feedback like "Good", "Poor", etc.
  */
 export type FileScore =
-    | 'Very Poor'
-    | 'Poor'
-    | 'Average'
-    | 'Good'
-    | 'Very Good';
+    | 'A - Excellent'
+    | 'B - Good'
+    | 'C - Fair'
+    | 'D - Moderate Risk'
+    | 'E - High Risk';
 
 /**
  * Result returned by a checker for a single test file.

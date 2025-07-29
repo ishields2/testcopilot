@@ -1,23 +1,31 @@
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import type { TestCopilotChecker, CheckerResult, CheckerOutput } from '../types/sharedTypes';
+import { calculateScore, gradeScore } from '../core/scoreUtils';
+import {
+    getTestBlocks,
+    mapIssuesToTestBlocks,
+    getAssertionLines,
+    getActionNodes
+} from '../core/checkerUtils';
 
+/**
+ * The raceConditionAnalysis checker detects flaky async patterns in Cypress tests.
+ * It flags hardcoded waits, missing intercepts, and user actions not followed by assertions.
+ * This helps teams write more reliable, maintainable, and trustworthy tests.
+ */
 export const raceConditionAnalysis: TestCopilotChecker = {
     key: 'raceConditionAnalysis',
     description: `Detects flaky wait patterns (cy.wait, .wait('@')) and async actions missing follow-up assertions.
 Helps catch timing issues that lead to flaky or misleading test results.`,
 
+    /**
+     * Analyzes a test file for async reliability issues.
+     * Flags hardcoded waits, missing intercepts, and actions without follow-up assertions.
+     * @param input - Object containing file path, content, and optional AST.
+     * @returns Analysis results including issues, score, and summary.
+     */
     analyze({ path, content, ast }: { path: string; content: string; ast?: any }): CheckerOutput {
-        const issues: CheckerResult[] = [];
-        const aliasMap = new Set<string>();
-        const actionNodes: { line: number; command: string; hasChainedAssertion: boolean }[] = [];
-        const assertionLines = new Set<number>();
-        const actionCommands = [
-            'click', 'type', 'clear', 'check', 'uncheck', 'select', 'dblclick',
-            'rightclick', 'focus', 'blur', 'submit', 'trigger', 'scrollIntoView', 'scrollTo'
-        ];
-        const assertionMethods = ['should', 'contains', 'expect', 'and', 'assert'];
-
         if (!ast) {
             ast = parse(content, {
                 sourceType: 'module',
@@ -25,12 +33,15 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
             });
         }
 
+        // Use shared utilities for AST analysis
+        const aliasMap = new Set<string>();
+        const issues: CheckerResult[] = [];
+
+        // Custom logic for cy.wait and intercept alias detection
         traverse(ast, {
             CallExpression(path) {
                 const { node } = path;
                 const callee = node.callee;
-
-                // Track aliases from cy.intercept(...).as('alias')
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.property.type === 'Identifier' &&
@@ -41,8 +52,6 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                     const alias = node.arguments[0].value;
                     aliasMap.add(`@${alias}`);
                 }
-
-                // Detect cy.wait(1000) or cy.wait('@alias')
                 if (
                     callee.type === 'MemberExpression' &&
                     callee.object.type === 'Identifier' &&
@@ -53,7 +62,6 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                 ) {
                     const arg = node.arguments[0];
                     const loc = node.loc?.start;
-
                     if (arg.type === 'NumericLiteral' && arg.value >= 500) {
                         issues.push({
                             message: `Hardcoded delay of ${arg.value}ms — using fixed waits causes flakiness and unreliable tests.`,
@@ -64,11 +72,9 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                             fix: `Replace with a condition-based wait like cy.get(...).should(...) or use cy.intercept() to wait for a specific network call.`,
                         });
                     }
-
                     if (arg.type === 'StringLiteral' && arg.value.startsWith('@')) {
                         const alias = arg.value;
                         const hasIntercept = aliasMap.has(alias);
-
                         issues.push({
                             message: hasIntercept
                                 ? `cy.wait('${alias}') used — alias is defined, but should be followed by a UI assertion to confirm the app reacted as expected.`
@@ -85,107 +91,18 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
                         });
                     }
                 }
-
-                // Detect actions
-                if (
-                    callee.type === 'MemberExpression' &&
-                    callee.property.type === 'Identifier' &&
-                    actionCommands.includes(callee.property.name)
-                ) {
-                    let root: any = callee.object;
-                    while (root && root.type === 'CallExpression') {
-                        root = root.callee?.type === 'MemberExpression' ? root.callee.object : null;
-                    }
-
-                    if (root?.type === 'Identifier' && root.name === 'cy') {
-                        const actionLine = node.loc?.start?.line;
-                        let hasChainedAssertion = false;
-                        let parent: typeof path.parentPath | null = path.parentPath;
-
-                        while (parent && parent.node.type === 'MemberExpression') {
-                            if (
-                                parent.node.property.type === 'Identifier' &&
-                                assertionMethods.includes(parent.node.property.name)
-                            ) {
-                                hasChainedAssertion = true;
-                                break;
-                            }
-                            parent = parent.parentPath;
-                        }
-
-                        if (typeof actionLine === 'number') {
-                            actionNodes.push({
-                                line: actionLine,
-                                command: callee.property.name,
-                                hasChainedAssertion,
-                            });
-                        }
-                    }
-                }
-
-                // Detect assertion-like lines
-                if (
-                    callee.type === 'MemberExpression' &&
-                    callee.property.type === 'Identifier' &&
-                    assertionMethods.includes(callee.property.name)
-                ) {
-                    const line = node.loc?.start?.line;
-                    if (typeof line === 'number') assertionLines.add(line);
-                }
-
-                // expect()
-                if (callee.type === 'Identifier' && callee.name === 'expect') {
-                    const line = node.loc?.start?.line;
-                    if (typeof line === 'number') assertionLines.add(line);
-                }
-
-                // .then(...) with expect or should
-                if (
-                    callee.type === 'MemberExpression' &&
-                    callee.property.type === 'Identifier' &&
-                    callee.property.name === 'then' &&
-                    node.arguments.length > 0
-                ) {
-                    const callback = node.arguments[0];
-                    if (
-                        callback.type === 'ArrowFunctionExpression' ||
-                        callback.type === 'FunctionExpression'
-                    ) {
-                        const body = callback.body;
-                        const bodyStatements = body.type === 'BlockStatement' ? body.body : [body];
-
-                        for (const stmt of bodyStatements) {
-                            if (stmt.type === 'ExpressionStatement' && stmt.expression.type === 'CallExpression') {
-                                const innerCall = stmt.expression;
-                                const innerCallee = innerCall.callee;
-
-                                if (
-                                    innerCallee.type === 'MemberExpression' &&
-                                    innerCallee.property.type === 'Identifier' &&
-                                    assertionMethods.includes(innerCallee.property.name)
-                                ) {
-                                    const line = innerCall.loc?.start?.line;
-                                    if (typeof line === 'number') assertionLines.add(line);
-                                }
-                                if (
-                                    innerCallee.type === 'Identifier' &&
-                                    innerCallee.name === 'expect'
-                                ) {
-                                    const line = innerCall.loc?.start?.line;
-                                    if (typeof line === 'number') assertionLines.add(line);
-                                }
-                            }
-                        }
-                    }
-                }
             },
         });
 
+        // Use shared utilities for action/assertion detection
+        const actionNodes = getActionNodes(ast);
+        const assertionLines = getAssertionLines(ast);
+
+        // Check for missing follow-up assertions after actions
         for (const action of actionNodes) {
             const hasFollowUp =
                 action.hasChainedAssertion ||
                 [...assertionLines].some(line => line > action.line && line <= action.line + 2);
-
             if (!hasFollowUp) {
                 issues.push({
                     message: `User action "cy.${action.command}()" is not followed by a check to confirm the app responded.`,
@@ -198,25 +115,19 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
             }
         }
 
-        const fileScore =
-            issues.length >= 4 ? 'Very Poor'
-                : issues.length === 3 ? 'Poor'
-                    : issues.length === 2 ? 'Average'
-                        : issues.length === 1 ? 'Good'
-                            : 'Very Good';
+        // Use shared utility to get test blocks
+        const testBlocks = getTestBlocks(ast);
+        // Map issues to test blocks
+        const testIssueMap = mapIssuesToTestBlocks(issues, testBlocks);
+        const testCount = testBlocks.length;
+        const failingTestCount = Math.min([...testIssueMap.keys()].length, testCount);
 
-        const plainSummary = `
-This test file was rated **${fileScore}** for async reliability.
+        // Calculate score
+        const numericScore = calculateScore(issues, testCount, failingTestCount, testIssueMap);
+        const fileScore = gradeScore(numericScore);
 
-${issues.length === 0
-                ? '✅ It shows strong async practices — using retryable assertions or intercepts instead of fixed waits.'
-                : `⚠️ It contains patterns that may cause flakiness, such as hardcoded waits, missing intercepts, or UI actions without follow-up checks.
-
-These issues mean the tests might pass even when the app is broken, or fail when the app is actually working — leading to wasted time debugging false results.
-
-Improving these tests will make them more stable, trustworthy, and maintainable for both developers and QA teams.`
-            }
-`.trim();
+        // Build summary using checker method
+        const plainSummary = raceConditionAnalysis.buildSummary(issues, fileScore, numericScore);
 
         return {
             checkerName: 'raceConditionAnalysis',
@@ -224,5 +135,28 @@ Improving these tests will make them more stable, trustworthy, and maintainable 
             fileScore,
             plainSummary,
         };
+    },
+
+    /**
+     * Builds a plain English summary of async reliability for the test file.
+     * @param issues - List of issues found in the file.
+     * @param fileScore - The grade or rating for the file.
+     * @param numericScore - The numeric score for the file.
+     * @returns A readable summary for CLI and documentation.
+     */
+    buildSummary(issues: CheckerResult[], fileScore: string, numericScore: number): string {
+        const lines = [];
+        lines.push(`This test file was rated ${fileScore} for async reliability (score: ${numericScore}).`);
+        lines.push('');
+        if (issues.length === 0) {
+            lines.push('✅ It shows strong async practices — using retryable assertions or intercepts instead of fixed waits.');
+        } else {
+            lines.push('⚠️ It contains patterns that may cause flakiness, such as hardcoded waits, missing intercepts, or UI actions without follow-up checks.');
+            lines.push('');
+            lines.push('These issues mean the tests might pass even when the app is broken, or fail when the app is actually working — leading to wasted time debugging false results.');
+            lines.push('');
+            lines.push('Improving these tests will make them more stable, trustworthy, and maintainable for both developers and QA teams.');
+        }
+        return lines.join('\n');
     },
 };

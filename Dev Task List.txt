@@ -9,6 +9,7 @@
 ## ⚙️ MVP CLI Features
 - [x] Implement file ingestion logic (sanner logic)
 - [x] Add checker for raceConditionAnalysis
+- [x] Scoring logic 
 - [ ] Logic to determine if file is a test file
 - [ ] Logic to traverse same file and static relative path import function calls 
 - [ ] Add checker for excessive `.then()` nesting
