@@ -65,12 +65,42 @@ function buildTable(issues: any[], flags: PdfReportFlags) {
 
 export async function printPdfMakeReport(codebaseReport: CodebaseOutput, outputPath: string = 'testcopilot-report.pdf', flags: PdfReportFlags) {
     const content: any[] = [];
+    // Read logo PNG and convert to base64 at runtime
+    let logoBase64: string | undefined;
+    try {
+        const logoPath = require('path').resolve(__dirname, '../../../../public/pdf_logo.png');
+        const logoBuffer = fs.readFileSync(logoPath);
+        logoBase64 = 'data:image/png;base64,' + logoBuffer.toString('base64');
+    } catch (err) {
+        // If logo not found, skip image
+        logoBase64 = undefined;
+    }
+    // Add main report title and logo in a single row using columns
+    content.push({
+        columns: [
+            {
+                text: 'TestCopilot Analysis Report',
+                style: 'header',
+                alignment: 'left',
+                margin: [0, 73, 0, 0]
+            },
+            logoBase64 ? {
+                image: 'logo',
+                width: 120,
+                alignment: 'right',
+                margin: [0, 0, 0, 0]
+            } : {}
+        ],
+        columnGap: 16,
+        margin: [-3, 0, 0, 10]
+    });
     // Only show codebase summary if codebaseAnalysis is true
     if (flags.codebaseAnalysis && codebaseReport.plainSummary) {
         content.push({
-            text: 'TestCopilot Codebase Analysis',
-            style: 'header',
-            margin: [0, 0, 0, 12]
+            text: 'Codebase Analysis',
+            style: 'subheader',
+            alignment: 'left',
+            margin: [0, 0, 0, 4]
         });
         content.push({
             text: codebaseReport.plainSummary,
@@ -92,12 +122,14 @@ export async function printPdfMakeReport(codebaseReport: CodebaseOutput, outputP
     }
     const docDefinition: any = {
         content,
+        images: logoBase64 ? { logo: logoBase64 } : {},
         styles: {
-            header: { fontSize: 20, bold: true, color: '#2a4d8f', alignment: 'center' },
+            header: { fontSize: 22, bold: true, color: '#001331', alignment: 'left' },
+            subheader: { fontSize: 16, bold: true, color: '#001331', alignment: 'left' },
             summary: { fontSize: 12, color: '#333' },
-            fileHeader: { fontSize: 14, bold: true, color: '#2a4d8f' },
+            fileHeader: { fontSize: 14, bold: true, color: '#001331' },
             fileScore: { fontSize: 11, color: '#444' },
-            fileSummary: { fontSize: 10, color: '#2a4d8f', italics: true },
+            fileSummary: { fontSize: 10, color: '#001331', italics: true },
             table: { margin: [0, 4, 0, 8] },
             tableHeader: { bold: true, fillColor: '#eaf2fb', color: '#222' },
             tableCell: { fontSize: 9, color: '#222', alignment: 'left' }
