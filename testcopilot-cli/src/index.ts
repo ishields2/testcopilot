@@ -107,8 +107,8 @@ program
             if (issue.contextCode) {
               console.log(chalk.gray(`   > ${issue.contextCode}`));
             }
-            // Only show extra detail if explain is true
-            if (config.explain) {
+            // Only show extra detail if issueExplain is true
+            if (config.issueExplain) {
               if (issue.plainExplanation) {
                 console.log(chalk.blueBright(`   💡 ${issue.plainExplanation}`));
               }
@@ -118,8 +118,8 @@ program
             }
             console.log();
           }
-          // Show file-level summary only if detailedResults is true
-          if (config.detailedResults && result.plainSummary) {
+          // Show file-level summary only if fileSummary is true
+          if (config.fileSummary && result.plainSummary) {
             console.log(chalk.whiteBright(`📝 Summary: ${result.plainSummary}\n`));
           }
         }
@@ -133,8 +133,8 @@ program
         codebaseReport,
         'testcopilot-report.pdf',
         {
-          explain: !!config.explain,
-          detailedResults: !!config.detailedResults,
+          issueExplain: !!config.issueExplain,
+          fileSummary: !!config.fileSummary,
           codebaseAnalysis: !!config.codebaseAnalysis
         }
       )
@@ -178,7 +178,7 @@ function waitForKeypress(): Promise<void> {
 async function runInit() {
   type ConfigAnswers = {
     outputFormat: 'summary' | 'json';
-    explain: boolean;
+    issueExplain: boolean;
     [key: string]: any;
   };
 
@@ -259,7 +259,7 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
   const answers: ConfigAnswers = {
     checkers: {},
     outputFormat: 'summary',
-    explain: true
+    issueExplain: true
   };
 
   // Prompt for each checker individually
@@ -297,12 +297,12 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
   answers.outputFormat = outputFormat;
 
   // Plain-English summaries
-  const explain = await new Confirm({
+  const issueExplain = await new Confirm({
     message: 'Include plain-English code review summaries?',
     initial: true,
     prefix: '✔'
   }).run();
-  answers.explain = explain;
+  answers.issueExplain = issueExplain;
 
   // Build config file object
   const config = {
@@ -310,7 +310,7 @@ which can lead to unexpected behavior. Promotes correct async handling using Cyp
       checkers.map((c) => [c.key, answers.checkers[c.key] || false])
     ),
     outputFormat: answers.outputFormat,
-    explain: answers.explain
+    issueExplain: answers.issueExplain
   };
 
   const outputPath = path.resolve('testcopilot.config.json');

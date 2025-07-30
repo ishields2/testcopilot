@@ -11,7 +11,7 @@
     "asyncAnalysis": false
   },
   "outputFormat": "pdf",
-  "explain": false,
-  "detailedResults": false,
+  "issueExplain": true,
+  "fileSummary": true,
   "codebaseAnalysis": true
 }

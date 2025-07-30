@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import type { CheckerOutput } from '../../types/sharedTypes';
 
-export function printCheckerResult(result: CheckerOutput, filePath: string, explain?: boolean): void {
+export function printCheckerResult(result: CheckerOutput, filePath: string, issueExplain?: boolean): void {
     console.log(chalk.greenBright(`🔍 Checker: ${result.checkerName}`));
     // Output both numeric score and grade
     if (typeof result.numericScore === 'number') {
@@ -30,7 +30,7 @@ export function printCheckerResult(result: CheckerOutput, filePath: string, expl
             console.log(chalk.gray(`   > ${issue.contextCode}`));
         }
 
-        if (explain) {
+        if (issueExplain) {
             if (issue.plainExplanation) {
                 console.log(chalk.blueBright(`   💡 ${issue.plainExplanation}`));
             }
@@ -43,7 +43,7 @@ export function printCheckerResult(result: CheckerOutput, filePath: string, expl
         console.log();
     }
 
-    if (explain && result.plainSummary) {
+    if (issueExplain && result.plainSummary) {
         console.log(chalk.whiteBright(`📝 Summary: ${result.plainSummary}\n`));
     }
 }

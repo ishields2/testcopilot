@@ -26,7 +26,7 @@
 - [ ] Format output with severity + recommendations
 - [ ] Add optional plain-English summary (Code Review output)
 - [ ] Add unit tests for checkers
-- [ ] Add GPT-powered summary and improvement suggestions (--explain flag)
+- [ ] Add GPT-powered summary and improvement suggestions (--issueExplain flag)
 - [ ] Add PDF report output (CLI)
 - [ ] VSCode Extension for Syntax Highlighting
 

@@ -24,8 +24,8 @@ export interface TestCopilotConfig {
     asyncAnalysis?: boolean;
   };
   outputFormat?: 'console' | 'pdf' | 'both';
-  explain?: boolean;
-  detailedResults?: boolean;
+  issueExplain?: boolean;
+  fileSummary?: boolean;
   codebaseAnalysis?: boolean;
 }
 
@@ -45,8 +45,8 @@ export const defaultConfig: TestCopilotConfig = {
     asyncAnalysis: true,
   },
   outputFormat: 'console',
-  explain: false,
-  detailedResults: true,
+  issueExplain: false,
+  fileSummary: true,
   codebaseAnalysis: true
 };
 

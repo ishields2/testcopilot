@@ -54,11 +54,11 @@
             ],
             "default": "console"
         },
-        "explain": {
+        "issueExplain": {
             "type": "boolean",
             "default": false
         },
-        "detailedResults": {
+        "fileSummary": {
             "type": "boolean",
             "default": true
         }
@@ -66,8 +66,8 @@
     "required": [
         "checkers",
         "outputFormat",
-        "explain",
-        "detailedResults",
+        "issueExplain",
+        "fileSummary",
         "codebaseAnalysis"
     ]
 }

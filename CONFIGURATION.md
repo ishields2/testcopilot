@@ -99,7 +99,7 @@ TestCopilot uses separate config files for CLI and UI, but both validate and app
     "asyncAnalysis": true
   },
   "outputFormat": "console",
-  "explain": false
+  "issueExplain": false
 }
 ```
 
@@ -142,23 +142,52 @@ Users can customize behavior via either flags or config file.
 ```json
 // testcopilot.config.json
 {
-  "outputFormat": "console", // or "summary", "pdf", json
+  "outputFormat": "console", // or "summary", "pdf", "json"
   "checkers": {
     "raceConditionAnalysis": true,
-    "thenNesting": true,
     "assertionAnalysis": true,
+    "deepNesting": true,
     "brittleSelectors": true,
     "longChains": true,
     "longTestStructure": true,
     "redundantShoulds": true,
     "falseConfidence": true,
-    "asyncConfusion": true
+    "asyncAnalysis": true
   },
-  "thresholds": {
-    "maxThenDepth": 3,
-    "maxChainLength": 10,
-    "maxTestLines": 60
-  }
+  "explain": false, // Show extra detail for each issue (line-by-line explanations)
+  "detailedResults": true, // Show file-level summary after issues
+  "codebaseAnalysis": false, // Show codebase-level summary at top
+  "issueExplain": false // (if present) enables GPT-powered explanations for issues
+}
+```
+
+### Flag Descriptions
+- `outputFormat`: Controls output destination. Options: `console`, `pdf`, `both`, `summary`, `json`.
+- `checkers`: Toggle individual analysis checkers on/off.
+- `explain`: If true, adds extra detail for each issue (explanation and suggested fix).
+- `detailedResults`: If true, adds a file-level summary after the issues for each file.
+- `codebaseAnalysis`: If true, adds a codebase-level summary at the top of the output.
+- `issueExplain`: If present and true, enables GPT-powered explanations for issues (future/optional).
+
+### Example Config
+```json
+{
+  "outputFormat": "pdf",
+  "checkers": {
+    "raceConditionAnalysis": true,
+    "assertionAnalysis": true,
+    "deepNesting": true,
+    "brittleSelectors": true,
+    "longChains": true,
+    "longTestStructure": true,
+    "redundantShoulds": true,
+    "falseConfidence": true,
+    "asyncAnalysis": true
+  },
+  "explain": true,
+  "detailedResults": true,
+  "codebaseAnalysis": true,
+  "issueExplain": true
 }
 ```
 

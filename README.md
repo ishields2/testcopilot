@@ -116,3 +116,36 @@ Then open [http://localhost:3000](http://localhost:3000) in your browser.
 - Changes to UI auto-reload with `npm run dev` from root
 - `testcopilot.config.json` should live in the root (or be passed via `--config`)
 
+## ⚙️ Config Options
+
+TestCopilot supports flexible configuration via flags or config file. All options below can be set in `testcopilot.config.json` or via CLI flags.
+
+```json
+{
+  "outputFormat": "console", // or "summary", "pdf", "json", "both"
+  "checkers": {
+    "raceConditionAnalysis": true,
+    "assertionAnalysis": true,
+    "deepNesting": true,
+    "brittleSelectors": true,
+    "longChains": true,
+    "longTestStructure": true,
+    "redundantShoulds": true,
+    "falseConfidence": true,
+    "asyncAnalysis": true
+  },
+  "explain": false, // Show extra detail for each issue (line-by-line explanations)
+  "detailedResults": true, // Show file-level summary after issues
+  "codebaseAnalysis": false, // Show codebase-level summary at top
+  "issueExplain": false // (if present) enables GPT-powered explanations for issues
+}
+```
+
+### Flag Descriptions
+- `outputFormat`: Controls output destination. Options: `console`, `pdf`, `both`, `summary`, `json`.
+- `checkers`: Toggle individual analysis checkers on/off.
+- `explain`: If true, adds extra detail for each issue (explanation and suggested fix).
+- `detailedResults`: If true, adds a file-level summary after the issues for each file.
+- `codebaseAnalysis`: If true, adds a codebase-level summary at the top of the output.
+- `issueExplain`: If present and true, enables GPT-powered explanations for issues (future/optional).
+

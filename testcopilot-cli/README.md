@@ -23,12 +23,21 @@ If no config file is present, defaults from the schema are applied automatically
     "falseConfidence": true,
     "asyncAnalysis": true
   },
-  "outputFormat": "summary",
-  "explain": false,
-  "codebaseAnalyis": true
-  
+  "outputFormat": "console", // or "summary", "pdf", "json", "both"
+  "explain": false, // Show extra detail for each issue (line-by-line explanations)
+  "detailedResults": true, // Show file-level summary after issues
+  "codebaseAnalysis": false, // Show codebase-level summary at top
+  "issueExplain": false // (if present) enables GPT-powered explanations for issues
 }
 ```
+
+### Flag Descriptions
+- `outputFormat`: Controls output destination. Options: `console`, `pdf`, `both`, `summary`, `json`.
+- `checkers`: Toggle individual analysis checkers on/off.
+- `explain`: If true, adds extra detail for each issue (explanation and suggested fix).
+- `detailedResults`: If true, adds a file-level summary after the issues for each file.
+- `codebaseAnalysis`: If true, adds a codebase-level summary at the top of the output.
+- `issueExplain`: If present and true, enables GPT-powered explanations for issues (future/optional).
 
 Run `tcp init` to interactively generate a config file with all options and defaults.
 # TestCopilot CLI
@@ -93,7 +102,7 @@ testcopilot-cli/
     "assertionAnalysis": true
   },
   "outputFormat": "summary",
-  "explain": true
+  "issueExplain": true
 }
 ```
 
