@@ -24,6 +24,9 @@ export interface CheckerOutput {
     /** The checker that produced this result (e.g. 'raceConditionAnalysis') */
     checkerName: string;
 
+    /** Path to the file that was analyzed */
+    filePath: string;
+
     /** List of issues detected in the file */
     issues: CheckerResult[];
 

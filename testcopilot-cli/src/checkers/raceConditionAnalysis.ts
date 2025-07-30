@@ -131,6 +131,7 @@ Helps catch timing issues that lead to flaky or misleading test results.`,
 
         return {
             checkerName: 'raceConditionAnalysis',
+            filePath: path,
             issues,
             fileScore,
             numericScore,

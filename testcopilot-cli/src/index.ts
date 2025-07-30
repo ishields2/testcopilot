@@ -67,55 +67,83 @@ program
         if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
         const result = checker.analyze({ path: filePath, content, ast });
         allResults.push(result);
-        // Console output logic
+      }
+    }
+
+    // Output codebase-level summary at the top if enabled in config
+    if (config.codebaseAnalysis && (config.outputFormat === 'console' || config.outputFormat === 'both')) {
+      const codebaseReport = aggregateCheckerResults(allResults);
+      console.log(chalk.greenBright('\n═══════════════════════════════════════════════════════════════════════════'));
+      console.log(chalk.whiteBright('Codebase Analysis Summary'));
+      console.log(chalk.greenBright('═══════════════════════════════════════════════════════════════════════════\n'));
+      console.log(codebaseReport.plainSummary);
+    }
+
+    // File-by-file console output
+    for (const file of filesWithContent) {
+      const { path: filePath, content } = file;
+      const ast = parse(content, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx']
+      });
+      for (const checker of Object.values(registeredCheckers)) {
+        if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
+        const result = checker.analyze({ path: filePath, content, ast });
         if (
           config.outputFormat === 'console' ||
           config.outputFormat === 'both'
         ) {
-          if (config.detailedResults) {
-            console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
-            console.log(`Running checker: ${checker.key}`);
-            printCheckerResult(result, filePath, config.explain);
-          } else {
-            // Only print warnings and file score
-            console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
-            console.log(chalk.bold(`Score: ${result.numericScore} (${result.fileScore})`));
-            for (const issue of result.issues) {
-              const sev = issue.severity?.toUpperCase() || 'INFO';
-              const lineInfo = issue.location
-                ? `Line ${issue.location.line}${issue.location.column !== undefined ? `, Col ${issue.location.column}` : ''}`
-                : '';
-              console.log(`• [${sev}] ${issue.message}`);
-              if (lineInfo) console.log(`   ${lineInfo}`);
-              if (issue.contextCode) {
-                console.log(chalk.gray(`   > ${issue.contextCode}`));
+          // Always show file header and checker
+          console.log(chalk.magentaBright(`\n📄 File: ${filePath}`));
+          console.log(`Running checker: ${checker.key}`);
+          // Line-by-line output
+          for (const issue of result.issues) {
+            const sev = issue.severity?.toUpperCase() || 'INFO';
+            const lineInfo = issue.location
+              ? `Line ${issue.location.line}${issue.location.column !== undefined ? `, Col ${issue.location.column}` : ''}`
+              : '';
+            console.log(`• [${sev}] ${issue.message}`);
+            if (lineInfo) console.log(`   ${lineInfo}`);
+            if (issue.contextCode) {
+              console.log(chalk.gray(`   > ${issue.contextCode}`));
+            }
+            // Only show extra detail if explain is true
+            if (config.explain) {
+              if (issue.plainExplanation) {
+                console.log(chalk.blueBright(`   💡 ${issue.plainExplanation}`));
+              }
+              if (issue.fix) {
+                console.log(chalk.green(`   🔧 Suggested fix: ${issue.fix}`));
               }
             }
+            console.log();
+          }
+          // Show file-level summary only if detailedResults is true
+          if (config.detailedResults && result.plainSummary) {
+            console.log(chalk.whiteBright(`📝 Summary: ${result.plainSummary}\n`));
           }
         }
       }
     }
 
-    // Output codebase-level summary if enabled in config
-    if (config.codebaseAnalysis) {
+    // Always generate PDF if requested
+    if (config.outputFormat === 'pdf' || config.outputFormat === 'both') {
       const codebaseReport = aggregateCheckerResults(allResults);
-      // PDF output logic
-      if (config.outputFormat === 'pdf' || config.outputFormat === 'both') {
-        printPdfMakeReport(codebaseReport, 'testcopilot-report.pdf')
-          .then(() => {
-            console.log(chalk.greenBright(`\n✅ PDF report generated at: testcopilot-report.pdf\n`));
-          })
-          .catch((err) => {
-            console.error(chalk.red('❌ Failed to generate PDF report:'), err);
-          });
-      }
-      // Console summary output logic
-      if (config.outputFormat === 'console' || config.outputFormat === 'both') {
-        console.log(chalk.greenBright('\n═══════════════════════════════════════════════════════════════════════════'));
-        console.log(chalk.whiteBright('Codebase Analysis Summary'));
-        console.log(chalk.greenBright('═══════════════════════════════════════════════════════════════════════════\n'));
-        console.log(codebaseReport.plainSummary);
-      }
+      printPdfMakeReport(
+        codebaseReport,
+        'testcopilot-report.pdf',
+        {
+          explain: !!config.explain,
+          detailedResults: !!config.detailedResults,
+          codebaseAnalysis: !!config.codebaseAnalysis
+        }
+      )
+        .then(() => {
+          console.log(chalk.greenBright(`\n✅ PDF report generated at: testcopilot-report.pdf\n`));
+        })
+        .catch((err) => {
+          console.error(chalk.red('❌ Failed to generate PDF report:'), err);
+        });
     }
   });
 
