@@ -1,44 +1,109 @@
+# ✅ TestCopilot MVP Task List
+
+---
+
 ## 🧱 Foundational / Setup
-- [x] Create CLI project repo with readme and license
+
+- [x] Create CLI project repo with README and license
 - [x] Define MVP scope and config strategy (including CLI + UI)
 - [x] Add CLI flags and configuration file support (`testcopilot.config.json`)
 - [x] Implement interactive CLI setup (`testcopilot init`) to scaffold config
 - [x] Sync default config settings between CLI and UI
 - [x] Add shared config schema file for CLI/UI validation
 
-## ⚙️ MVP CLI Features
-- [x] Implement file ingestion logic (sanner logic)
-- [x] Add checker for raceConditionAnalysis
-- [x] Scoring logic 
-- [ ] Logic to determine if file is a test file
-- [ ] Logic to traverse same file and static relative path import function calls 
+---
+
+## ⚙️ MVP CLI Features – Prototype Core
+
+- [x] Implement file ingestion logic (scanner logic)
+- [x] Add checker for `raceConditionAnalysis`
+- [x] Add scoring logic
+- [ ] VSCode Extension for Syntax Highlighting
+- [x] Detect whether a file is a Cypress test file
+- [ ] Detect function usage across test files and statically imported helpers
+- [ ] Add GitHub Action with markdown summary + fail on threshold
+- [ ] Add ability to scan from GitHub URI (public or private)
+- [x] Ensure architecture supports easy adding of Playwright later
+- [ ] Add GPT-powered summary and improvement suggestions (`--issueExplain` flag)
+- [ ] Build feature gating logic (e.g. `featureAccess`) but leave all features unlocked
+- [ ] 🚀 Pre-Launch MVP milestone (1 checker + CLI + UI upload + PDF + GitHub URI scan)
+
+---
+
+## ⚙️ MVP CLI Features – Additional Checkers
+
 - [ ] Add checker for excessive `.then()` nesting
 - [ ] Add checker for brittle selectors
 - [ ] Add checker for long test chains
-- [ ] Add checker for redundant shoulds
+- [ ] Add checker for redundant `should`s
 - [ ] Add checker for False Confidence Heuristic
 - [ ] Add checker for missing assertions
-- [ ] Add checker for Async/Await confusion
-- [ ] Add advanced codebase design checker 
-- [ ] Add cypress/playwright detection logic 
-- [ ] Add playwright checker for missing raceConditionAnalysis
-- [ ] Add playwright checker for missing brittleSelectors
-- [ ] Format output with severity + recommendations
-- [ ] Add optional plain-English summary (Code Review output)
+- [ ] Add checker for async/await confusion
+
+---
+
+## ⚙️ MVP CLI Features – Polish
+
+- [ ] Format CLI output with severity and recommendations
+- [ ] Polish optional plain-English summaries
+- [ ] Polish PDF report output (CLI)
+
+---
+
+## ✅ Testing & Quality
+
 - [ ] Add unit tests for checkers
-- [ ] Add GPT-powered summary and improvement suggestions (--issueExplain flag)
-- [ ] Add PDF report output (CLI)
-- [ ] VSCode Extension for Syntax Highlighting
+- [ ] Add integration tests for file ingestion and scoring
+- [ ] Add regression tests as checkers expand
+
+---
+
+## 🧠 GPT-Powered Enhancements
+
+- [ ] Add `--issueExplain` flag for GPT-powered suggestions
+- [ ] Add GPT summary at file level (non-technical format)
+
+
+---
 
 ## 💻 MVP UI (File + Folder Upload)
+
 - [ ] Create frontend file upload project repo
 - [ ] Implement drag & drop + file parsing
 - [ ] Add folder upload support via `webkitdirectory`
-- [ ] Display per-file analysis results
+- [ ] Allow GitHub URL scan
 - [ ] Add toggle for project-level summary
-- [ ] Style output formatting like the CLI (severity + review)
-- [ ] Add edge case handling (non-js files, too large, etc.)
+- [ ] Match CLI output formatting in UI (severity + review)
+- [ ] Handle edge cases (non-JS files, oversized files, etc.)
 - [ ] Add config settings panel to match CLI options
 - [ ] Add AI summary toggle for UI analysis
 - [ ] Allow downloading PDF report from UI
 - [ ] Add usage documentation for CLI and UI
+
+---
+
+## 🟢 Launch 🚀
+- [ ] Release MVP (1 checker, CLI, UI, PDF, GitHub URI scan, GPT explain) 100% free
+
+---
+
+## 📊 Phase 2 – Paid Product 
+
+- [ ] Add paid vs. free gating logic and decide what to gate
+- [ ] Add payment/stripe logic 
+- [ ] User auth system (email + magic link OR GitHub OAuth)
+
+## 📊 Phase 3 – Advanced Features
+- [ ] Convert UI to dashboard with auth and saved scan history
+    - View scan history over time
+    - Label scans (e.g. “Release 1.2 Audit”)
+    - Store uploaded files or scan results
+    - Add user accounts (email + password or GitHub login)
+    - Invite team members
+    - Show project-level stats: avg score, top issues, regressions
+- [ ] Add Playwright checker for missing `raceConditionAnalysis`
+- [ ] Add Cypress/Playwright detection logic
+- [ ] Add Playwright checker for brittle selectors
+- [ ] Add advanced codebase design checker
+- [ ] Add GPT summary at project level (overall score + top issues)
+- [ ] (Phase 2) Add historical GPT comparison summaries in dashboard

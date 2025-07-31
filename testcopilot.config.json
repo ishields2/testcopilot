@@ -8,7 +8,8 @@
     "longTestStructure": false,
     "redundantShoulds": false,
     "falseConfidence": false,
-    "asyncAnalysis": false
+    "asyncAnalysis": false,
+    "samplePlaywrightChecker": true
   },
   "outputFormat": "pdf",
   "issueExplain": true,

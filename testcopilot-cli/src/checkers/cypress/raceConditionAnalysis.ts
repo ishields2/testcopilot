@@ -1,13 +1,14 @@
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import type { TestCopilotChecker, CheckerResult, CheckerOutput } from '../types/sharedTypes';
-import { calculateScore, gradeScore } from '../core/scoreUtils';
+import type { TestCopilotChecker, CheckerResult, CheckerOutput } from '../../types/sharedTypes';
+import { calculateScore, gradeScore } from '../../core/scoreUtils';
 import {
     getTestBlocks,
     mapIssuesToTestBlocks,
     getAssertionLines,
     getActionNodes
-} from '../core/checkerUtils';
+} from '../../core/checkerUtils';
+
 
 /**
  * The raceConditionAnalysis checker detects flaky async patterns in Cypress tests.
@@ -16,6 +17,7 @@ import {
  */
 export const raceConditionAnalysis: TestCopilotChecker = {
     key: 'raceConditionAnalysis',
+    framework: 'cypress',
     description: `Detects flaky wait patterns (cy.wait, .wait('@')) and async actions missing follow-up assertions.
 Helps catch timing issues that lead to flaky or misleading test results.`,
 

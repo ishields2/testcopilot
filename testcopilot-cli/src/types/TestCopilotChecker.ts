@@ -13,6 +13,10 @@ export interface TestCopilotChecker {
      * Used to identify the checker in output and configuration.
      */
     key: string;
+    /**
+     * Framework supported by this checker (e.g. 'cypress', 'playwright', or 'shared').
+     */
+    framework: 'cypress' | 'playwright' | 'shared';
 
     /**
      * Description of what the checker does, shown in CLI, documentation, and setup prompts.

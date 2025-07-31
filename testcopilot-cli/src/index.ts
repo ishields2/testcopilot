@@ -22,6 +22,7 @@ import { parse } from '@babel/parser';
 import { printCheckerResult } from './cli/output/printCheckerResult';
 import { aggregateCheckerResults } from './core/codebaseUtils';
 import { printPdfMakeReport } from './cli/output/printPdfMakeReport';
+import { detectFramework } from './core/frameworkDetection';
 
 const program = new Command(); // Create CLI instance
 
@@ -63,7 +64,9 @@ program
         sourceType: 'module',
         plugins: ['typescript', 'jsx']
       });
-      for (const checker of Object.values(registeredCheckers)) {
+      const framework = detectFramework(filePath, content);
+      const checkers = framework ? registeredCheckers[framework] : [];
+      for (const checker of checkers) {
         if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
         const result = checker.analyze({ path: filePath, content, ast });
         allResults.push(result);
@@ -86,7 +89,9 @@ program
         sourceType: 'module',
         plugins: ['typescript', 'jsx']
       });
-      for (const checker of Object.values(registeredCheckers)) {
+      const framework = detectFramework(filePath, content);
+      const checkers = framework ? registeredCheckers[framework] : [];
+      for (const checker of checkers) {
         if (!config.checkers?.[checker.key as keyof typeof config.checkers]) continue;
         const result = checker.analyze({ path: filePath, content, ast });
         if (

@@ -10,6 +10,10 @@
                     "type": "boolean",
                     "default": true
                 },
+                "samplePlaywrightChecker": {
+                    "type": "boolean",
+                    "default": true
+                },
                 "assertionAnalysis": {
                     "type": "boolean",
                     "default": true
