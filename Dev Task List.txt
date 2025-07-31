@@ -50,19 +50,10 @@
 
 ---
 
-## ✅ Testing & Quality
-
-- [ ] Add unit tests for checkers
-- [ ] Add integration tests for file ingestion and scoring
-- [ ] Add regression tests as checkers expand
-
----
-
 ## 🧠 GPT-Powered Enhancements
 
 - [ ] Add `--issueExplain` flag for GPT-powered suggestions
 - [ ] Add GPT summary at file level (non-technical format)
-
 
 ---
 
@@ -79,6 +70,15 @@
 - [ ] Add AI summary toggle for UI analysis
 - [ ] Allow downloading PDF report from UI
 - [ ] Add usage documentation for CLI and UI
+
+---
+
+## ✅ Testing & Quality
+
+- [ ] Add unit tests for checkers
+- [ ] Add integration tests for file ingestion and scoring
+- [ ] Add Cypress tests for UI or manual test thoroughly
+- [ ] Add regression tests as checkers expand
 
 ---
 
