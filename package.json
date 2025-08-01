@@ -2,12 +2,20 @@
   "name": "testcopilot",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "testcopilot-cli",
+    "testcopilot-ui",
+    "testcopilot-vsc",
+    "shared"
+  ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "cli": "ts-node testcopilot-cli/src/index.ts scan ./test-files"
+    "build": "npm run build --workspace=testcopilot-shared && npm run build --workspace=testcopilot-cli && npm run build --workspace=testcopilot-ui && npm run build --workspace=testcopilot-vsc",
+    "clean": "rimraf testcopilot-cli/dist testcopilot-shared/dist testcopilot-ui/.next testcopilot-vsc/dist testcopilot-cli/tsconfig.tsbuildinfo testcopilot-shared/tsconfig.tsbuildinfo",
+    "cli": "node testcopilot-cli/dist/index.js",
+    "cli:dev": "npx ts-node testcopilot-cli/src/index.ts",
+    "ui": "npm run dev --workspace=testcopilot-ui",
+    "vsc:build": "npm run build --workspace=testcopilot-vsc"
   },
   "dependencies": {
     "enquirer": "^2.4.1",
@@ -17,6 +25,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "rimraf": "^5.0.5",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

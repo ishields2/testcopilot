@@ -1,0 +1,22 @@
+{
+    "name": "testcopilot-shared",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "description": "Shared checkers, AST utilities, and types for TestCopilot CLI, VS Code extension, and UI.",
+    "author": "Ian Shields",
+    "license": "MIT",
+    "private": true,
+    "scripts": {
+        "build": "tsc -p ."
+    },
+    "dependencies": {
+        "@babel/parser": "^7.28.0",
+        "@babel/traverse": "^7.28.0",
+        "@babel/types": "^7.28.2"
+    },
+    "devDependencies": {
+        "@types/babel__traverse": "^7.28.0",
+        "typescript": "^5.8.3"
+    }
+}

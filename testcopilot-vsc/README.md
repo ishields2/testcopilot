@@ -1,6 +1,24 @@
 # testcopilot README
 
-This is the README for your extension "testcopilot". After writing up a brief description, we recommend including the following sections.
+
+# TestCopilot VS Code Extension
+
+This is the VS Code extension for TestCopilot. It provides in-editor diagnostics for Cypress test files using the shared checkers and logic from the monorepo.
+
+---
+
+## 🚀 Usage (from Monorepo Root)
+
+- **Build the extension:**
+  ```sh
+  npm run vsc:build
+  ```
+
+See the root README for more details and scripts.
+
+---
+
+## Features
 
 ## Features
 

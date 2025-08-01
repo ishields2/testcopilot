@@ -1,0 +1,8 @@
+{
+    "name": "testcopilot-ui",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "next build"
+    }
+}

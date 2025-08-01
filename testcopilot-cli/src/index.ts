@@ -16,13 +16,12 @@ import { loadConfig } from './configLoader';   // Loads testcopilot.config.json 
 import { Confirm, Select } from 'enquirer';    // Prompts from Enquirer
 import readline from 'readline';               // For "press any key to continue"
 import glob = require('glob');                 // Glob pattern matching for file discovery
-import { registeredCheckers } from './checkers/registeredCheckers';
-import type { CheckerOutput } from './types/CheckerOutput';
+import { registeredCheckers } from 'testcopilot-shared/dist/checkers/registeredCheckers';
+import type { CheckerOutput } from 'testcopilot-shared/dist/types/CheckerOutput';
 import { parse } from '@babel/parser';
-import { printCheckerResult } from './cli/output/printCheckerResult';
-import { aggregateCheckerResults } from './core/codebaseUtils';
+import { aggregateCheckerResults } from 'testcopilot-shared/dist/core/codebaseUtils';
 import { printPdfMakeReport } from './cli/output/printPdfMakeReport';
-import { detectFramework } from './core/frameworkDetection';
+import { detectFramework } from 'testcopilot-shared/dist/core/frameworkDetection';
 
 const program = new Command(); // Create CLI instance
 

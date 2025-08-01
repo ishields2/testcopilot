@@ -19,6 +19,7 @@
 - [x] Add checker for `raceConditionAnalysis`
 - [x] Add scoring logic
 - [ ] VSCode Extension for Syntax Highlighting
+- [ ] ensure raceConditionAnalysis checks for stuff not returning chainable
 - [x] Detect whether a file is a Cypress test file
 - [ ] Detect function usage across test files and statically imported helpers
 - [ ] Add GitHub Action with markdown summary + fail on threshold

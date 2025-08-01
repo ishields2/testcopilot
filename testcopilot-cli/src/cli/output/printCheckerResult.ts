@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { CheckerOutput } from '../../types/sharedTypes';
+import type { CheckerOutput } from 'testcopilot-shared/dist/types/CheckerOutput';
 
 export function printCheckerResult(result: CheckerOutput, filePath: string, issueExplain?: boolean): void {
     console.log(chalk.greenBright(`🔍 Checker: ${result.checkerName}`));

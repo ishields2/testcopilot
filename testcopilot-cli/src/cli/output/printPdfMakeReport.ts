@@ -1,6 +1,6 @@
 const pdfMake = require('pdfmake/build/pdfmake');
 const pdfFonts = require('pdfmake/build/vfs_fonts');
-import type { CodebaseOutput } from '../../core/codebaseUtils';
+import type { CodebaseOutput } from 'testcopilot-shared/dist/core/codebaseUtils';
 
 export interface PdfReportFlags {
     issueExplain: boolean;
@@ -68,7 +68,7 @@ export async function printPdfMakeReport(codebaseReport: CodebaseOutput, outputP
     // Read logo PNG and convert to base64 at runtime
     let logoBase64: string | undefined;
     try {
-        const logoPath = require('path').resolve(__dirname, '../../../../public/pdf_logo.png');
+        const logoPath = require('path').resolve(process.cwd(), 'public/pdf_logo.png');
         const logoBuffer = fs.readFileSync(logoPath);
         logoBase64 = 'data:image/png;base64,' + logoBuffer.toString('base64');
     } catch (err) {
