@@ -126,11 +126,40 @@ TestCopilot supports flexible configuration via flags or config file. All option
 }
 ```
 
-### Flag Descriptions
-- `outputFormat`: Controls output destination. Options: `console`, `pdf`, `both`, `summary`, `json`.
-- `checkers`: Toggle individual analysis checkers on/off.
-- `explain`: If true, adds extra detail for each issue (explanation and suggested fix).
-- `detailedResults`: If true, adds a file-level summary after the issues for each file.
-- `codebaseAnalysis`: If true, adds a codebase-level summary at the top of the output.
-- `issueExplain`: If present and true, enables GPT-powered explanations for issues (future/optional).
+
+### How This Project Works (Plain English)
+
+#### TypeScript, Node.js, and ts-node
+
+- **TypeScript** is a language that adds types to JavaScript. You write `.ts` files, but Node.js (the runtime) only understands JavaScript (`.js`).
+- **Transpiling/Building**: To run your code with Node.js, you need to "build" (transpile) your TypeScript into JavaScript. This is done with the TypeScript compiler (`tsc`). The output goes into `dist/` folders (or `.next/` for Next.js apps).
+- **ts-node** is a tool that lets you run TypeScript files directly (without building first). It's great for development and quick testing, but not recommended for production because it's slower and doesn't catch all build errors ahead of time.
+
+#### Build Process and `dist` Folders
+
+- When you run `npm run build`, each package (CLI, shared, extension) uses `tsc` to convert `.ts` files to `.js` files. These go into a `dist/` folder (e.g., `testcopilot-cli/dist`).
+- The `dist/` folder is what Node.js actually runs in production. You don't edit files in `dist/`—they are generated automatically from your source code.
+- For Next.js apps, the build output is in a `.next/` folder instead of `dist/`.
+
+#### Why Are Some Files Greyed Out?
+
+- In VS Code, files in `dist/` or `.next/` may appear greyed out because they are build artifacts (generated files). They are not meant to be edited by hand.
+- You can safely delete the `dist/` or `.next/` folders at any time; they'll be recreated the next time you run `npm run build`.
+
+#### Typical Workflow
+
+1. **Development:**
+   - Edit `.ts` files in `src/` folders.
+   - Use `npm run cli:dev` to run the CLI directly with `ts-node` (no build needed).
+   - Use `npm run ui` to run the Next.js UI in dev mode (auto-reloads on changes).
+2. **Production/Testing:**
+   - Run `npm run build` to transpile everything to `dist/` (or `.next/`).
+   - Run the CLI or extension from the built output (e.g., `npm run cli`).
+
+#### Why This Structure?
+
+- Keeps source code (`src/`) separate from build output (`dist/`), making it easy to clean up and avoid confusion.
+- Allows fast iteration in dev (with `ts-node`), but reliable, optimized code in production (from `dist/`).
+
+If you're new to TypeScript, Node.js, or monorepos, don't worry—this setup is very common and helps keep things organized as your project grows. You can always delete the `dist/` or `.next/` folders if you want a clean slate; just rebuild when needed.
 
