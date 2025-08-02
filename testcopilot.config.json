@@ -11,7 +11,7 @@
     "asyncAnalysis": false,
     "samplePlaywrightChecker": true
   },
-  "outputFormat": "pdf",
+  "outputFormat": "both",
   "issueExplain": true,
   "fileSummary": true,
   "codebaseAnalysis": true

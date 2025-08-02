@@ -12,10 +12,12 @@ export interface CheckerResult {
     /** Description of the issue */
     message: string;
 
-    /** Location in the file (line and optional column) */
+    /** Location in the file (start and end positions) */
     location?: {
         line: number;
         column?: number;
+        endLine?: number;
+        endColumn?: number;
     };
 
     /** Optional fix or recommendation */
